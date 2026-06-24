@@ -41,18 +41,22 @@ const userSchema = new mongoose.Schema({
     workSlots: { type: Array, default: Array(9).fill(null) },
     hamsterIdCounter: { type: Number, default: 0 },
     banned: { type: Boolean, default: false },
-    banReason: { type: String, default: '' }
+    banReason: { type: String, default: '' },
+    banUntil: { type: Date, default: null },
+    adminUnlocked: { type: Boolean, default: false }
 });
 
 const chatSchema = new mongoose.Schema({
     username: String,
     message: String,
+    isPrivate: { type: Boolean, default: false },
     timestamp: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
 const Chat = mongoose.model('Chat', chatSchema);
 
+// РЕГИСТРАЦИЯ
 app.post('/register', async (req, res) => {
     try {
         const { username, password, refCode } = req.body;
@@ -80,12 +84,26 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// ВХОД
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await User.findOne({ username });
         if (!user || user.password !== password) return res.status(400).json({ error: 'Неверный ник или пароль' });
-        if (user.banned) return res.status(403).json({ error: '⛔ Вы забанены! Причина: ' + user.banReason });
+        if (user.banned) {
+            const now = Date.now();
+            if (user.banUntil && now < user.banUntil) {
+                const remain = Math.ceil((user.banUntil - now) / 1000);
+                return res.status(403).json({ error: '⛔ Вы забанены! Причина: ' + user.banReason + ' (осталось ' + remain + 'с)' });
+            } else if (user.banUntil && now >= user.banUntil) {
+                user.banned = false;
+                user.banReason = '';
+                user.banUntil = null;
+                await user.save();
+            } else {
+                return res.status(403).json({ error: '⛔ Вы забанены! Причина: ' + user.banReason });
+            }
+        }
         res.json({
             success: true,
             user: {
@@ -115,14 +133,15 @@ app.post('/login', async (req, res) => {
                 workSlots: user.workSlots,
                 hamsterIdCounter: user.hamsterIdCounter,
                 banned: user.banned,
-                banReason: user.banReason
+                banReason: user.banReason,
+                adminUnlocked: user.adminUnlocked || false
             }
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
-
+// СОХРАНЕНИЕ
 app.post('/save', async (req, res) => {
     try {
         const { username, data } = req.body;
@@ -130,7 +149,7 @@ app.post('/save', async (req, res) => {
         if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
         if (user.banned) return res.status(403).json({ error: '⛔ Вы забанены!' });
         Object.keys(data).forEach(key => {
-            if (key !== 'username' && key !== 'password' && key !== '_id' && key !== 'banned' && key !== 'banReason') {
+            if (key !== 'username' && key !== 'password' && key !== '_id' && key !== 'banned' && key !== 'banReason' && key !== 'banUntil' && key !== 'adminUnlocked') {
                 user[key] = data[key];
             }
         });
@@ -141,6 +160,38 @@ app.post('/save', async (req, res) => {
     }
 });
 
+// СБРОС
+app.post('/reset', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+        user.taps = 0;
+        user.tokens = 0;
+        user.gems = 0;
+        user.totalClicks = 0;
+        user.rebirthCount = 0;
+        user.clickPower = 1;
+        user.inventory = [];
+        user.dailyClaimed = [];
+        user.autoClickers = 0;
+        user.clickUpgrade = 0;
+        user.autoClickerPrice = 25;
+        user.clickUpgradePrice = 10;
+        user.playTime = 0;
+        user.minerBest = 0;
+        user.soldItems = 0;
+        user.activeBoosts = {};
+        user.workSlots = Array(9).fill(null);
+        user.hamsterIdCounter = 0;
+        await user.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// БАН
 app.post('/ban-nick', async (req, res) => {
     try {
         const { username, reason } = req.body;
@@ -148,6 +199,22 @@ app.post('/ban-nick', async (req, res) => {
         if (!user) return res.status(404).json({ error: 'Игрок не найден' });
         user.banned = true;
         user.banReason = reason || 'Нарушение правил';
+        user.banUntil = null;
+        await user.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/ban-temp', async (req, res) => {
+    try {
+        const { username, reason, duration } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: 'Игрок не найден' });
+        user.banned = true;
+        user.banReason = reason || 'Нарушение правил';
+        user.banUntil = new Date(Date.now() + duration * 1000);
         await user.save();
         res.json({ success: true });
     } catch (err) {
@@ -162,6 +229,7 @@ app.post('/unban-nick', async (req, res) => {
         if (!user) return res.status(404).json({ error: 'Игрок не найден' });
         user.banned = false;
         user.banReason = '';
+        user.banUntil = null;
         await user.save();
         res.json({ success: true });
     } catch (err) {
@@ -169,26 +237,71 @@ app.post('/unban-nick', async (req, res) => {
     }
 });
 
+// KICK
+app.post('/kick', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: 'Игрок не найден' });
+        res.json({ success: true, message: 'Игрок ' + username + ' кикнут' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ВЫДАЧА ПРЕДМЕТА
 app.post('/give-item', async (req, res) => {
     try {
         const { username, item } = req.body;
+        if (!username || !item) return res.status(400).json({ error: 'Не все поля заполнены' });
         const user = await User.findOne({ username });
         if (!user) return res.status(404).json({ error: 'Игрок не найден' });
+        if (user.inventory.length >= 20) {
+            return res.status(400).json({ error: 'Инвентарь игрока полон' });
+        }
+        const exists = user.inventory.some(i => i.id === item.id);
+        if (exists) {
+            return res.status(400).json({ error: 'Предмет уже есть у игрока' });
+        }
         user.inventory.push({
-            id: 'gift_' + Date.now(),
-            emoji: item.emoji,
-            name: item.name,
+            id: item.id || 'gift_' + Date.now(),
+            emoji: item.emoji || '🎁',
+            name: item.name || 'Предмет',
             sellTap: item.sellTap || 0,
             sellToken: item.sellToken || 0,
             sellGems: item.sellGems || 0
         });
         await user.save();
-        res.json({ success: true });
+        res.json({ success: true, message: 'Предмет ' + item.name + ' выдан' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
+// ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ИГРОКЕ
+app.post('/user-info', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: 'Игрок не найден' });
+        res.json({
+            success: true,
+            user: {
+                username: user.username,
+                taps: user.taps,
+                tokens: user.tokens,
+                gems: user.gems,
+                playTime: user.playTime,
+                rebirthCount: user.rebirthCount,
+                totalClicks: user.totalClicks
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// СПИСОК ИГРОКОВ
 app.get('/users', async (req, res) => {
     try {
         const users = await User.find({}, 'username refCode gems tokens taps rebirthCount banned');
@@ -198,30 +311,71 @@ app.get('/users', async (req, res) => {
     }
 });
 
-app.post('/chat', async (req, res) => {
+// РАЗДАЧА ВСЕМ ИГРОКАМ
+app.post('/give-all', async (req, res) => {
     try {
-        const { username, message } = req.body;
-        if (!username || !message) return res.status(400).json({ error: 'Заполните все поля' });
-        const user = await User.findOne({ username });
-        if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
-        if (user.banned) return res.status(403).json({ error: '⛔ Вы забанены!' });
-        const chat = new Chat({ username, message });
-        await chat.save();
+        const { type, amount, message } = req.body;
+        const users = await User.find({});
+        let count = 0;
+        for (const user of users) {
+            if (user.banned) continue;
+            if (type === 'taps') user.taps += amount;
+            else if (type === 'tokens') user.tokens += amount;
+            else if (type === 'gems') user.gems += amount;
+            await user.save();
+            count++;
+        }
+        if (message) {
+            const chatMsg = new Chat({ username: 'System', message: message });
+            await chatMsg.save();
+        }
+        res.json({ success: true, count: count });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+//  ИВЕНТЫ
+// ============================================================
+let globalEvent = null;
+
+app.post('/event/start', async (req, res) => {
+    try {
+        const { type, duration, message } = req.body;
+        globalEvent = {
+            type: type,
+            endTime: Date.now() + duration * 60000,
+            message: message || 'Запущен ивент!'
+        };
+        const chatMsg = new Chat({ username: 'System', message: message || '🎉 Запущен ивент!' });
+        await chatMsg.save();
+        res.json({ success: true, event: globalEvent });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/event/stop', async (req, res) => {
+    try {
+        globalEvent = null;
+        const chatMsg = new Chat({ username: 'System', message: '⏹️ Ивент завершён!' });
+        await chatMsg.save();
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/chat', async (req, res) => {
+app.get('/event/status', async (req, res) => {
     try {
-        const messages = await Chat.find().sort({ timestamp: -1 }).limit(50);
-        res.json(messages.reverse());
+        if (globalEvent && globalEvent.endTime > Date.now()) {
+            res.json({ active: true, event: globalEvent });
+        } else {
+            globalEvent = null;
+            res.json({ active: false });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-});
-
-app.listen(PORT, () => {
-    console.log(`✅ Сервер запущен на порту ${PORT}`);
 });
