@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // ===== ПОДКЛЮЧЕНИЕ К MONGODB =====
-const MONGO_URI = 'mongodb+srv://Admin:homyakV3_212400@cluster0.owsi01j.mongodb.net/homyak?retryWrites=true&w=majority';
+const MONGO_URI = const MONGO_URI = 'mongodb+srv://Admin:homyakV3_212400@cluster0.owsi01j.mongodb.net/homyak?retryWrites=true&w=majority';
 
 console.log('🔍 Пытаюсь подключиться к MongoDB...');
 
