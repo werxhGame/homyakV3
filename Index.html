@@ -2005,4 +2005,1394 @@ document.querySelectorAll('.owner-ban-btn.give').forEach(btn => {
         }
     };
 });
-  
+adminLoginBtn.onclick = function() {
+    const pass = adminPassword.value;
+    if (pass === '9416') {
+        adminPanel.style.display = 'block';
+        state.adminUnlocked = true;
+        showToast('🔓 Панель администратора разблокирована!');
+        SoundFX.play('win');
+        updateUI();
+    } else {
+        alert('❌ Неверный код!');
+    }
+};
+
+document.getElementById('adminGiveAll').onclick = function() {
+    if (!state.adminUnlocked) return;
+    document.getElementById('creatorGiveAll').click();
+};
+
+const adminItems = [
+    { id: 'adminGiveIronLeg', item: { id: 'iron_leg', emoji: '🦿', name: 'Железная нога', sellTap: 700000, sellToken: 150, sellGems: 0 } },
+    { id: 'adminGiveIronArm', item: { id: 'iron_arm', emoji: '🦾', name: 'Железная рука', sellTap: 500000, sellToken: 100, sellGems: 0 } },
+    { id: 'adminGiveGold', item: { id: 'gold', emoji: '🥇', name: 'Золото', sellTap: 900000, sellToken: 350, sellGems: 0 } },
+    { id: 'adminGiveSecret', item: { id: 'secret', emoji: '🔮', name: 'Секретный материал', sellTap: 999999999, sellToken: 1000, sellGems: 0 } },
+    { id: 'adminGiveAmethyst', item: { id: 'amethyst', emoji: '🟣', name: 'Аметист', sellTap: 5000, sellToken: 20, sellGems: 0 } },
+    { id: 'adminGiveGoldenGlasses', item: { id: 'golden_glasses', emoji: '🕶️', name: 'Золотые очки', sellTap: 10000, sellToken: 50, sellGems: 0 } },
+    { id: 'adminGiveDragonEye', item: { id: 'dragon_eye', emoji: '🐉', name: 'Глаз дракона', sellTap: 0, sellToken: 250, sellGems: 20 } },
+    { id: 'adminGiveDiamondItem', item: { id: 'diamond_item', emoji: '💎', name: 'Алмаз (предмет)', sellTap: 0, sellToken: 20, sellGems: 5 } },
+    { id: 'adminGiveZov', item: { id: 'zov', emoji: '🇷🇺', name: 'Zov', sellTap: 999999999, sellToken: 999999999, sellGems: 999999999 } }
+];
+
+adminItems.forEach(({ id, item }) => {
+    document.getElementById(id).onclick = async function() {
+        if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+        const name = giveInput.value.trim();
+        if (!name) return showToast('❌ Введите ник игрока');
+        try {
+            const res = await fetch(SERVER_URL + '/give-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: name, item: item })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('🎁 ' + item.name + ' выдан игроку ' + name);
+            } else {
+                showToast('❌ ' + data.error);
+            }
+        } catch (e) {
+            showToast('❌ Ошибка сервера');
+        }
+    };
+});
+
+document.getElementById('adminGiveAllCase').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    const name = giveInput.value.trim();
+    if (!name) return showToast('❌ Введите ник игрока');
+    const caseItems = [
+        { id: 'case_pig', emoji: '🥓', name: 'Pig', sellTap: 1000, sellToken: 1, sellGems: 0 },
+        { id: 'case_vine', emoji: '🍷', name: 'Vine', sellTap: 5000, sellToken: 5, sellGems: 0 },
+        { id: 'case_company', emoji: '🏢', name: 'Company', sellTap: 30000, sellToken: 20, sellGems: 0 },
+        { id: 'case_we1qs', emoji: '😝', name: 'We1qs', sellTap: 50000, sellToken: 30, sellGems: 0 },
+        { id: 'case_urvxh', emoji: '🥀', name: 'Urvxh', sellTap: 70000, sellToken: 55, sellGems: 0 },
+        { id: 'case_werxhfrag', emoji: '💼', name: 'werxhfrag', sellTap: 10000000, sellToken: 0, sellGems: 10000 }
+    ];
+    let success = 0;
+    for (const item of caseItems) {
+        try {
+            const res = await fetch(SERVER_URL + '/give-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: name, item: item })
+            });
+            const data = await res.json();
+            if (data.success) success++;
+        } catch (e) {}
+    }
+    showToast('🎁 Выдано ' + success + ' кейсовых предметов игроку ' + name);
+};
+
+document.getElementById('adminSkipMiner').onclick = function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    document.getElementById('creatorSkipMinerCooldown').click();
+};
+
+document.getElementById('adminSkipDaily').onclick = function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    document.getElementById('creatorUnlockDaily').click();
+};
+
+document.getElementById('adminBoost10xForever').onclick = function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    state.activeBoosts['boost10'] = Infinity;
+    showToast('⚡ 10x клик НАВСЕГДА!');
+    updateUI();
+};
+document.getElementById('adminBoost100xForever').onclick = function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    state.activeBoosts['boost100'] = Infinity;
+    showToast('⚡ 100x клик НАВСЕГДА!');
+    updateUI();
+};
+document.getElementById('adminBoost10000x5min').onclick = function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    state.activeBoosts['boost10000'] = Date.now() + 5 * 60000;
+    showToast('⚡ 10000x клик на 5 минут!');
+    updateUI();
+};
+
+// ИНФОРМАЦИЯ О ИГРОКЕ
+infoStatsBtn.onclick = async function() {
+    const name = infoInput.value.trim();
+    if (!name) return showToast('❌ Введите ник');
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/user-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showToast('❌ ' + data.error);
+            return;
+        }
+        const u = data.user;
+        infoModalTitle.textContent = '📊 Статистика ' + u.username;
+        const hours = Math.floor(u.playTime / 3600);
+        const minutes = Math.floor((u.playTime % 3600) / 60);
+        infoModalBody.innerHTML = `
+            🕒 Время в игре: ${hours}ч ${minutes}м<br>
+            🔄 Перерождений: ${u.rebirthCount}<br>
+            👆 Кликов: ${u.totalClicks}<br>
+        `;
+        infoModal.classList.add('active');
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+infoCurrencyBtn.onclick = async function() {
+    const name = infoInput.value.trim();
+    if (!name) return showToast('❌ Введите ник');
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/user-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showToast('❌ ' + data.error);
+            return;
+        }
+        const u = data.user;
+        infoModalTitle.textContent = '💰 Валюта ' + u.username;
+        infoModalBody.innerHTML = `
+            💰 Тапов: ${u.taps.toLocaleString()}<br>
+            🪙 Токенов: ${u.tokens.toLocaleString()}<br>
+            💎 Алмазов: ${u.gems.toLocaleString()}<br>
+        `;
+        infoModal.classList.add('active');
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+infoModalClose.onclick = function() {
+    infoModal.classList.remove('active');
+};
+infoModal.addEventListener('click', function(e) {
+    if (e.target === infoModal) infoModal.classList.remove('active');
+});
+
+// РАЗДАЧА ВСЕМ ИГРОКАМ
+document.getElementById('giveAllTaps10k').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/give-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'taps', amount: 10000, message: '💰 Всем игрокам выдано 10,000 тапов от админа!' })
+        });
+        const data = await res.json();
+        if (data.success) showToast('✅ Выдано 10,000 тапов ' + data.count + ' игрокам');
+        else showToast('❌ ' + data.error);
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+document.getElementById('giveAllTaps100k').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/give-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'taps', amount: 100000, message: '💰 Всем игрокам выдано 100,000 тапов от админа!' })
+        });
+        const data = await res.json();
+        if (data.success) showToast('✅ Выдано 100,000 тапов ' + data.count + ' игрокам');
+        else showToast('❌ ' + data.error);
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+document.getElementById('giveAllTokens1k').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/give-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'tokens', amount: 1000, message: '🪙 Всем игрокам выдано 1,000 токенов от админа!' })
+        });
+        const data = await res.json();
+        if (data.success) showToast('✅ Выдано 1,000 токенов ' + data.count + ' игрокам');
+        else showToast('❌ ' + data.error);
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+document.getElementById('giveAllTokens10k').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/give-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'tokens', amount: 10000, message: '🪙 Всем игрокам выдано 10,000 токенов от админа!' })
+        });
+        const data = await res.json();
+        if (data.success) showToast('✅ Выдано 10,000 токенов ' + data.count + ' игрокам');
+        else showToast('❌ ' + data.error);
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+document.getElementById('giveAllGems100').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/give-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'gems', amount: 100, message: '💎 Всем игрокам выдано 100 алмазов от админа!' })
+        });
+        const data = await res.json();
+        if (data.success) showToast('✅ Выдано 100 алмазов ' + data.count + ' игрокам');
+        else showToast('❌ ' + data.error);
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+// ИВЕНТЫ
+async function startEvent(type, multiplier, message) {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/event/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: type, duration: 5, message: message })
+        });
+        const data = await res.json();
+        if (data.success) {
+            globalEvent = data.event;
+            showToast('🎉 ' + message);
+            applyEventStyles();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+}
+
+document.getElementById('eventDisco').onclick = function() {
+    startEvent('disco', 5, '🪩 Запущен ивент Disco! 5x клик на 5 минут!');
+};
+document.getElementById('eventVolcano').onclick = function() {
+    startEvent('volcano', 8, '🌋 Запущен ивент Вулкан! 8x клик на 5 минут!');
+};
+document.getElementById('eventLightning').onclick = function() {
+    startEvent('lightning', 3, '⚡ Запущен ивент Молния! 3x клик на 5 минут!');
+};
+
+document.getElementById('eventStop').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/event/stop', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            globalEvent = null;
+            showToast('⏹️ Ивент остановлен!');
+            applyEventStyles();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+// ВИДЖЕТ ADMIN ABUSE
+async function setWidget(active) {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/widget/abuse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ active: active })
+        });
+        const data = await res.json();
+        if (data.success) {
+            adminWidgetActive = data.active;
+            applyWidget();
+            showToast(active ? '📢 Виджет показан!' : '🔇 Виджет убран!');
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+}
+
+document.getElementById('widgetAbuseOn').onclick = function() {
+    setWidget(true);
+};
+document.getElementById('widgetAbuseOff').onclick = function() {
+    setWidget(false);
+};
+
+async function checkEventStatus() {
+    try {
+        const res = await fetch(SERVER_URL + '/event/status');
+        const data = await res.json();
+        if (data.active) {
+            globalEvent = data.event;
+            applyEventStyles();
+        } else {
+            globalEvent = null;
+            applyEventStyles();
+        }
+    } catch (e) {}
+}
+
+function applyEventStyles() {
+    const app = document.getElementById('app');
+    app.classList.remove('event-disco', 'event-volcano', 'event-lightning');
+    if (globalEvent && globalEvent.endTime > Date.now()) {
+        if (globalEvent.type === 'disco') app.classList.add('event-disco');
+        else if (globalEvent.type === 'volcano') app.classList.add('event-volcano');
+        else if (globalEvent.type === 'lightning') app.classList.add('event-lightning');
+    }
+}
+
+async function checkWidgetStatus() {
+    try {
+        const res = await fetch(SERVER_URL + '/widget/status');
+        const data = await res.json();
+        adminWidgetActive = data.active;
+        applyWidget();
+    } catch (e) {}
+}
+
+function applyWidget() {
+    const existing = document.getElementById('adminWidget');
+    if (existing) existing.remove();
+    if (adminWidgetActive) {
+        const widget = document.createElement('div');
+        widget.id = 'adminWidget';
+        widget.className = 'admin-widget';
+        widget.textContent = '🛠️ Сейчас проходит ADMIN ABUSE!';
+        document.body.appendChild(widget);
+    }
+}
+
+// ОЧИСТКА ЧАТА //
+    document.getElementById('adminClearChat').onclick = async function() {
+    if (!state.adminUnlocked) return showToast('❌ Панель не разблокирована');
+    if (!confirm('⚠️ Очистить все сообщения в глобальном чате?')) return;
+    try {
+        const res = await fetch(SERVER_URL + '/chat/clear', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('🗑️ Чат очищен!');
+            loadChat();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+// ============================================================
+//  ОТПРАВКА СООБЩЕНИЙ (OWNER И ADMIN)
+// ============================================================
+// OWNER — глобальное
+ownerSendGlobalBtn.onclick = async function() {
+    const msg = ownerGlobalMsg.value.trim();
+    if (!msg) return showToast('❌ Введите сообщение');
+    if (!state.creatorUnlocked) return showToast('❌ Панель создателя не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: '🛠️ Owner', message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            ownerGlobalMsg.value = '';
+            showToast('✅ Сообщение отправлено всем!');
+            loadChat();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+// OWNER — локальное
+ownerSendLocalBtn.onclick = function() {
+    const msg = ownerLocalMsg.value.trim();
+    if (!msg) return showToast('❌ Введите сообщение');
+    if (!state.creatorUnlocked) return showToast('❌ Панель создателя не разблокирована');
+    showToastLocalMessage('🛠️ Owner', msg);
+    ownerLocalMsg.value = '';
+};
+
+// ADMIN — глобальное
+adminSendGlobalBtn.onclick = async function() {
+    const msg = adminGlobalMsg.value.trim();
+    if (!msg) return showToast('❌ Введите сообщение');
+    if (!state.adminUnlocked) return showToast('❌ Панель администратора не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: '🛠️ Admin', message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            adminGlobalMsg.value = '';
+            showToast('✅ Сообщение отправлено всем!');
+            loadChat();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка сервера'); }
+};
+
+// ADMIN — локальное
+adminSendLocalBtn.onclick = function() {
+    const msg = adminLocalMsg.value.trim();
+    if (!msg) return showToast('❌ Введите сообщение');
+    if (!state.adminUnlocked) return showToast('❌ Панель администратора не разблокирована');
+    showToastLocalMessage('🛠️ Admin', msg);
+    adminLocalMsg.value = '';
+};
+    Часть 16 — index.html (глобальный чат, шахтёр, вкладки, работа хомяков)
+
+```js
+// ============================================================
+//  ГЛОБАЛЬНЫЙ ЧАТ (С СИНЕЙ ГАЛОЧКОЙ ДЛЯ OWNER/ADMIN)
+// ============================================================
+async function loadChat() {
+    try {
+        const res = await fetch(SERVER_URL + '/chat');
+        const messages = await res.json();
+        chatMessages.innerHTML = '';
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            let displayName = msg.username;
+            if (msg.username === '🛠️ Owner' || msg.username === '🛠️ Admin') {
+                displayName = msg.username + ' <span class="verified-badge">✓</span>';
+            }
+            div.innerHTML = `<span class="name">${displayName}:</span> <span class="text">${msg.message}</span>`;
+            chatMessages.appendChild(div);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    } catch (e) {
+        chatMessages.innerHTML = '<div style="color:#ff6666;text-align:center;">⚠️ Ошибка загрузки чата</div>';
+    }
+}
+
+chatSendBtn.onclick = async function() {
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+    if (!state.currentUser) return showToast('❌ Войдите в аккаунт');
+    try {
+        const res = await fetch(SERVER_URL + '/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: state.currentUser, message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            chatInput.value = '';
+            loadChat();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка отправки'); }
+};
+
+privateSendBtn.onclick = async function() {
+    const to = privateChatInput.value.trim();
+    const msg = privateMsgInput.value.trim();
+    if (!to || !msg) return showToast('❌ Заполните все поля');
+    if (!state.currentUser) return showToast('❌ Войдите в аккаунт');
+    try {
+        const res = await fetch(SERVER_URL + '/chat/private', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ from: state.currentUser, to: to, message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            privateMsgInput.value = '';
+            privateChatInput.value = '';
+            loadChat();
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) { showToast('❌ Ошибка отправки'); }
+};
+
+chatInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') chatSendBtn.click();
+});
+privateMsgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') privateSendBtn.click();
+});
+
+setInterval(() => {
+    if (state.currentUser && document.getElementById('tab-chat').classList.contains('active')) {
+        loadChat();
+    }
+}, 5000);
+
+// ============================================================
+//  ШАХТЁР
+// ============================================================
+const MINER_REWARDS = {
+    1: { taps: 200, tokens: 0, gems: 0 },
+    2: { taps: 500, tokens: 0, gems: 0 },
+    3: { taps: 1000, tokens: 0, gems: 0 },
+    4: { taps: 2000, tokens: 0, gems: 0 },
+    5: { taps: 3000, tokens: 0, gems: 0 },
+    6: { taps: 5000, tokens: 0, gems: 0 },
+    7: { taps: 0, tokens: 0, gems: 5 },
+    8: { taps: 0, tokens: 0, gems: 10 },
+    9: { taps: 0, tokens: 20, gems: 0 },
+    10: { taps: 2000, tokens: 50, gems: 20 }
+};
+
+let minerState = {
+    running: false,
+    score: 0,
+    timeLeft: 30,
+    numbers: [],
+    bombs: [],
+    usedIndices: [],
+    isBomb: false,
+    cooldownUntil: 0,
+    gameEnded: false
+};
+
+function loadMinerState() {
+    const saved = DB.get('minerState', null);
+    if (saved) {
+        minerState = saved;
+    }
+}
+function saveMinerState() {
+    DB.set('minerState', minerState);
+}
+
+function generateMinerGame() {
+    const pool = [1,2,3,4,5,6,7,8,9,10];
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const numbers = pool.slice(0, 9);
+    const bombCount = Math.random() < 0.5 ? 4 : 5;
+    const indices = [0,1,2,3,4,5,6,7,8];
+    for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    const bombs = indices.slice(0, bombCount);
+    return { numbers, bombs };
+}
+
+function renderMinerGrid() {
+    const cells = document.querySelectorAll('.miner-cell');
+    cells.forEach((cell, index) => {
+        if (minerState.usedIndices.includes(index)) {
+            cell.classList.add('used');
+            cell.textContent = '✅';
+        } else if (minerState.numbers[index] !== undefined) {
+            cell.textContent = minerState.numbers[index];
+            cell.className = 'miner-cell';
+        }
+    });
+}
+
+function updateMinerUI() {
+    document.getElementById('minerTimer').textContent = '⏱️ ' + minerState.timeLeft + 'с';
+    document.getElementById('minerScore').textContent = '💰 Накоплено: ' + minerState.score;
+    renderMinerGrid();
+    const cooldownEl = document.getElementById('minerCooldown');
+    const cooldownTimeEl = document.getElementById('minerCooldownTime');
+    const now = Date.now();
+    if (minerState.cooldownUntil > now) {
+        const diff = minerState.cooldownUntil - now;
+        const m = Math.floor(diff / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        cooldownTimeEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        cooldownEl.style.display = 'block';
+        document.getElementById('minerStart').disabled = true;
+    } else {
+        cooldownEl.style.display = 'none';
+        document.getElementById('minerStart').disabled = false;
+    }
+}
+
+function startMiner() {
+    if (minerState.running) return;
+    if (state.rebirthCount < 2) {
+        showToast('❌ Нужно 2 перерождения для шахтёра!');
+        return;
+    }
+    if (minerState.cooldownUntil > Date.now()) {
+        showToast('⏳ Подождите ' + Math.ceil((minerState.cooldownUntil - Date.now()) / 1000) + ' сек!');
+        return;
+    }
+    const game = generateMinerGame();
+    minerState.running = true;
+    minerState.score = 0;
+    minerState.numbers = game.numbers;
+    minerState.bombs = game.bombs;
+    minerState.usedIndices = [];
+    minerState.isBomb = false;
+    minerState.gameEnded = false;
+    minerState.timeLeft = 30;
+    document.getElementById('minerStart').disabled = true;
+    document.getElementById('minerStart').textContent = '⏳ Идёт...';
+    updateMinerUI();
+    const timerInterval = setInterval(() => {
+        if (!minerState.running || minerState.gameEnded) {
+            clearInterval(timerInterval);
+            return;
+        }
+        minerState.timeLeft--;
+        updateMinerUI();
+        if (minerState.timeLeft <= 0) {
+            clearInterval(timerInterval);
+            endMiner(false, '⏰ Время вышло!');
+        }
+    }, 1000);
+}
+
+function handleMinerClick(index) {
+    if (!minerState.running || minerState.gameEnded) return;
+    if (minerState.usedIndices.includes(index)) return;
+    const cell = document.querySelectorAll('.miner-cell')[index];
+    if (minerState.bombs.includes(index)) {
+        minerState.isBomb = true;
+        minerState.gameEnded = true;
+        cell.classList.add('bomb');
+        cell.textContent = '💥';
+        minerState.running = false;
+        minerState.score = 0;
+        minerState.cooldownUntil = Date.now() + 300000;
+        saveMinerState();
+        showToast('💥 ВЗРЫВ! Всё сброшено! (ждать 5 мин)');
+        document.getElementById('minerStart').disabled = true;
+        document.getElementById('minerStart').textContent = '▶️ Начать';
+        updateMinerUI();
+        return;
+    }
+    const value = minerState.numbers[index];
+    const reward = MINER_REWARDS[value];
+    if (reward) {
+        const points = reward.taps + reward.tokens * 10 + reward.gems * 100;
+        minerState.score += points;
+        if (minerState.score > state.minerBest) {
+            state.minerBest = minerState.score;
+        }
+        cell.classList.add('green');
+        cell.textContent = '✅';
+        minerState.usedIndices.push(index);
+        showToast('🎯 +' + points + ' очков!');
+    }
+    updateMinerUI();
+    if (minerState.usedIndices.length === 9) {
+        endMiner(true, '🎉 Все числа собраны!');
+    }
+}
+
+function endMiner(claimed, message) {
+    if (minerState.gameEnded) return;
+    minerState.running = false;
+    minerState.gameEnded = true;
+    document.getElementById('minerStart').disabled = false;
+    document.getElementById('minerStart').textContent = '▶️ Начать';
+    if (claimed && minerState.score > 0) {
+        const tapsReward = Math.floor(minerState.score / 10);
+        const tokensReward = Math.floor(minerState.score / 100);
+        const gemsReward = Math.floor(minerState.score / 500);
+        state.taps += tapsReward;
+        state.tokens += tokensReward;
+        state.gems += gemsReward;
+        showToast('💰 +' + tapsReward + ' тапов, 🪙 +' + tokensReward + ' токенов, 💎 +' + gemsReward + ' алмазов!');
+        updateUI();
+    } else if (message) {
+        showToast(message);
+    }
+    minerState.score = 0;
+    updateMinerUI();
+    saveMinerState();
+}
+
+document.getElementById('minerStart').onclick = startMiner;
+document.getElementById('minerClaim').onclick = function() {
+    if (!minerState.running || minerState.gameEnded) {
+        showToast('❌ Сначала начни игру!');
+        return;
+    }
+    if (minerState.score === 0) {
+        showToast('❌ Нет очков для забора!');
+        return;
+    }
+    endMiner(true, '✅ Награда забрана!');
+};
+document.querySelectorAll('.miner-cell').forEach(cell => {
+    cell.onclick = function() {
+        const index = parseInt(this.dataset.index);
+        handleMinerClick(index);
+    };
+});
+    
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.onclick = function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+        if (this.dataset.tab === 'inventory') renderInventory();
+        if (this.dataset.tab === 'market') renderMarket();
+        if (this.dataset.tab === 'daily') renderDaily();
+        if (this.dataset.tab === 'shop') renderShop();
+        if (this.dataset.tab === 'miner') updateMinerUI();
+        if (this.dataset.tab === 'work') renderWorkGrid();
+        if (this.dataset.tab === 'chat') loadChat();
+    };
+});
+
+// ============================================================
+//  РАБОТА ХОМЯКОВ
+// ============================================================
+function renderWorkGrid() {
+    const slots = document.querySelectorAll('.work-slot');
+    const now = Date.now();
+    let activeCount = 0;
+    slots.forEach((slot, index) => {
+        const data = workState.slots[index];
+        if (data) {
+            slot.className = 'work-slot filled';
+            if (data.asleep) {
+                slot.className += ' asleep';
+            }
+            slot.innerHTML = `
+                🐹
+                <div class="status-icon">${data.asleep ? '💤' : '⚡'}</div>
+                <div class="hamster-name">Хомяк ${data.id}</div>
+                <div class="timer-text">${data.asleep ? 'Спит' : Math.floor((data.workEnd - now) / 1000) + 'с'}</div>
+                <div class="actions">
+                    ${data.asleep ? `<button class="wake-btn" data-index="${index}">⏰ Будить</button>` : ''}
+                    <button class="remove-btn" data-index="${index}">✖</button>
+                </div>
+            `;
+            if (!data.asleep) activeCount++;
+        } else {
+            slot.className = 'work-slot';
+            slot.innerHTML = '➕';
+        }
+    });
+    workStatus.textContent = 'Хомяков на работе: ' + activeCount + ' / 9';
+    document.querySelectorAll('.work-slot .wake-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            e.stopPropagation();
+            const index = parseInt(this.dataset.index);
+            wakeHamster(index);
+        };
+    });
+    document.querySelectorAll('.work-slot .remove-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            e.stopPropagation();
+            const index = parseInt(this.dataset.index);
+            removeHamster(index);
+        };
+    });
+    slots.forEach((slot, index) => {
+        if (!workState.slots[index]) {
+            slot.onclick = function() {
+                buyHamster(index);
+            };
+        }
+    });
+}
+
+function buyHamster(index) {
+    if (workState.slots[index]) {
+        showToast('❌ Это место уже занято!');
+        return;
+    }
+    if (state.taps < 100000) {
+        showToast('❌ Недостаточно тапов! Нужно 100,000 💰');
+        return;
+    }
+    state.taps -= 100000;
+    const now = Date.now();
+    workState.slots[index] = {
+        id: ++workState.hamsterIdCounter,
+        workEnd: now + 300000,
+        asleep: false,
+        boostEnd: null,
+        boostMultiplier: 1
+    };
+    showToast('🐹 Хомяк нанят! Он будет работать 5 минут.');
+    updateUI();
+    saveWorkState();
+    renderWorkGrid();
+}
+
+function wakeHamster(index) {
+    const data = workState.slots[index];
+    if (!data || !data.asleep) return;
+    data.asleep = false;
+    data.workEnd = Date.now() + 300000;
+    showToast('⏰ Хомяк разбужен! Он снова работает.');
+    saveWorkState();
+    renderWorkGrid();
+}
+
+function removeHamster(index) {
+    const data = workState.slots[index];
+    if (!data) return;
+    state.taps += 50000;
+    workState.slots[index] = null;
+    showToast('🐹 Хомяк уволен! Получено 50,000 💰');
+    updateUI();
+    saveWorkState();
+    renderWorkGrid();
+}
+
+setInterval(() => {
+    if (!state.currentUser) return;
+    const now = Date.now();
+    let needUpdate = false;
+    workState.slots.forEach((data, index) => {
+        if (!data) return;
+        if (data.asleep) return;
+        if (now > data.workEnd) {
+            data.asleep = true;
+            needUpdate = true;
+            showToast('💤 Хомяк на работе заснул! Разбуди его.');
+        } else {
+            if (!data._lastClickTime) data._lastClickTime = 0;
+            if (now - data._lastClickTime >= 30000) {
+                data._lastClickTime = now;
+                const boostMultiplier = data.boostEnd && now < data.boostEnd ? 30 : 1;
+                const clicks = 30 * boostMultiplier;
+                state.taps += clicks;
+                state.totalClicks += 1;
+                needUpdate = true;
+            }
+        }
+        if (data.boostEnd && now > data.boostEnd) {
+            data.boostEnd = null;
+            needUpdate = true;
+        }
+    });
+    if (needUpdate) {
+        updateUI();
+        saveWorkState();
+        renderWorkGrid();
+    }
+}, 1000);
+
+buyHamsterBtn.onclick = function() {
+    const index = workState.slots.findIndex(s => s === null);
+    if (index === -1) {
+        showToast('❌ Все места заняты!');
+        return;
+    }
+    buyHamster(index);
+};
+
+boostHamsterBtn.onclick = function() {
+    if (state.gems < 20) {
+        showToast('❌ Недостаточно алмазов! Нужно 20 💎');
+        return;
+    }
+    const now = Date.now();
+    let boosted = false;
+    workState.slots.forEach(data => {
+        if (data && !data.asleep) {
+            data.boostEnd = now + 120000;
+            data.boostMultiplier = 30;
+            boosted = true;
+        }
+    });
+    if (!boosted) {
+        showToast('❌ Нет работающих хомяков для буста!');
+        return;
+    }
+    state.gems -= 20;
+    showToast('⚡ Буст активирован на 2 минуты!');
+    updateUI();
+    saveWorkState();
+    renderWorkGrid();
+};
+
+function saveWorkState() {
+    DB.set('workState', workState);
+    }
+    Часть 17 — index.html (промокоды, кейсы, настройки)
+
+```js
+// ============================================================
+//  ПРОМОКОДЫ
+// ============================================================
+const PROMOCODES = {
+    'casino_love': { type: 'gems', amount: 10, desc: '10 алмазов' },
+    'urvxh_top': { type: 'gems', amount: 20, desc: '20 алмазов' },
+    'we1qs_top': { type: 'gems', amount: 20, desc: '20 алмазов' },
+    'lucky': { type: 'taps', amount: 5000, desc: '5 000 тапов' },
+    'numbers': { type: 'taps', amount: 123123, desc: '123 123 тапов' },
+    'homyakv2': { type: 'tokens', amount: 50, desc: '50 токенов' },
+    '666': { type: 'tokens', amount: 666, desc: '666 токенов' },
+    '9_9_9': { type: 'scare', desc: 'СКРИМЕР!' },
+    '1000-7': { type: 'tokens', amount: 1007, desc: '1007 токенов' },
+    'я вижу тебя': { type: 'blood', desc: '' }
+};
+
+function showPromoMessage(text, isError = false) {
+    promoMessage.textContent = text;
+    promoMessage.style.color = isError ? '#ff6666' : '#6f6';
+    setTimeout(() => { promoMessage.textContent = ''; }, 5000);
+}
+
+function applyBloodStyle() {
+    localStorage.setItem('bloodStyle', 'true');
+    document.body.style.background = '#0a0000';
+    document.body.style.backgroundImage = 'radial-gradient(circle at 30% 40%, #2a0000, #0a0000)';
+    document.querySelectorAll('.tab-btn, .shop-item, .market-item, .daily-item, .inv-slot, .miner-cell, .balance, .level-box, .rebirth-progress, .stat-box, .auth-form button, .modal-content, .miner-area, .owner-panel, .promo-area, .bottom-row button, .miner-buttons button, .spin-btn, .pred-btn, .rebirth-btn, .shop-item, .market-item').forEach(el => {
+        el.style.background = 'rgba(80, 0, 0, 0.3)';
+        el.style.borderColor = '#8b0000';
+        el.style.color = '#ff4444';
+        el.style.textShadow = '0 0 20px rgba(255,0,0,0.5)';
+    });
+    const hamster = document.getElementById('hamsterEmoji');
+    if (hamster) {
+        hamster.textContent = '👹';
+        hamster.style.filter = 'drop-shadow(0 0 40px rgba(255,0,0,0.8))';
+        hamster.style.transform = 'scale(1.1)';
+    }
+    document.querySelectorAll('h1, h2, h3, h4, .version').forEach(el => {
+        el.style.color = '#ff2222';
+        el.style.textShadow = '0 0 30px rgba(255,0,0,0.6)';
+    });
+    document.querySelectorAll('button').forEach(el => {
+        el.style.background = 'linear-gradient(135deg, #2a0000, #4a0000)';
+        el.style.borderColor = '#8b0000';
+        el.style.color = '#ff4444';
+        el.style.boxShadow = '0 0 20px rgba(255,0,0,0.3)';
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.textContent = '';
+        const heart = document.createElement('span');
+        heart.className = 'heart';
+        heart.textContent = '🫀';
+        heart.style.fontSize = '22px';
+        heart.style.display = 'inline-block';
+        heart.style.animation = 'heartBeat 0.5s ease-in-out infinite';
+        btn.appendChild(heart);
+    });
+}
+
+promoBtn.onclick = function() {
+    const code = promoInput.value.trim().toLowerCase();
+    if (!code) {
+        showPromoMessage('❌ Введите промокод!', true);
+        return;
+    }
+    const promo = PROMOCODES[code];
+    if (!promo) {
+        showPromoMessage('❌ Неверный промокод!', true);
+        return;
+    }
+    if (code === 'я вижу тебя') {
+        applyBloodStyle();
+        playHorrorSound();
+        promoInput.value = '';
+        updateUI();
+        return;
+    }
+    if (usedPromos.includes(code)) {
+        showPromoMessage('❌ Промокод уже использован!', true);
+        return;
+    }
+    usedPromos.push(code);
+    localStorage.setItem('usedPromos', JSON.stringify(usedPromos));
+    switch (promo.type) {
+        case 'gems':
+            state.gems += promo.amount;
+            showPromoMessage('✅ +' + promo.amount + ' алмазов!');
+            break;
+        case 'taps':
+            state.taps += promo.amount;
+            showPromoMessage('✅ +' + promo.amount + ' тапов!');
+            break;
+        case 'tokens':
+            state.tokens += promo.amount;
+            showPromoMessage('✅ +' + promo.amount + ' токенов!');
+            break;
+        case 'scare':
+            showScare();
+            showPromoMessage('👻 СКРИМЕР!');
+            break;
+    }
+    updateUI();
+    promoInput.value = '';
+};
+
+function showScare() {
+    try {
+        const audio = new AudioContext();
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        osc.connect(gain);
+        gain.connect(audio.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, audio.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audio.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.5, audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.5);
+        osc.start(audio.currentTime);
+        osc.stop(audio.currentTime + 0.5);
+    } catch(e) {}
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:red;z-index:9999;display:flex;align-items:center;justify-content:center;font-size:80px;font-weight:bold;color:#fff;animation:scareFlash 0.1s infinite;';
+    overlay.textContent = '💀';
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 5000);
+}
+const scareStyle = document.createElement('style');
+scareStyle.textContent = `@keyframes scareFlash { 0% { background: red; transform: scale(1); } 50% { background: black; transform: scale(1.2); } 100% { background: red; transform: scale(1); } }`;
+document.head.appendChild(scareStyle);
+if (localStorage.getItem('bloodStyle') === 'true') {
+    applyBloodStyle();
+}
+
+// ============================================================
+//  КЕЙСЫ
+// ============================================================
+const CASE_ITEMS = [
+    { emoji: '🥓', name: 'Pig', weight: 50, sellTap: 1000, sellToken: 1, sellGems: 0 },
+    { emoji: '🍷', name: 'Vine', weight: 45, sellTap: 5000, sellToken: 5, sellGems: 0 },
+    { emoji: '🏢', name: 'Company', weight: 20, sellTap: 30000, sellToken: 20, sellGems: 0 },
+    { emoji: '😝', name: 'We1qs', weight: 10, sellTap: 50000, sellToken: 30, sellGems: 0 },
+    { emoji: '🥀', name: 'Urvxh', weight: 5, sellTap: 70000, sellToken: 55, sellGems: 0 },
+    { emoji: '💼', name: 'werxhfrag', weight: 0.5, sellTap: 10000000, sellToken: 0, sellGems: 10000 }
+];
+
+const TOTAL_CASE_WEIGHT = CASE_ITEMS.reduce((sum, item) => sum + item.weight, 0);
+
+function rollCase() {
+    const rand = Math.random() * TOTAL_CASE_WEIGHT;
+    let cumulative = 0;
+    for (const item of CASE_ITEMS) {
+        cumulative += item.weight;
+        if (rand <= cumulative) {
+            return item;
+        }
+    }
+    return CASE_ITEMS[CASE_ITEMS.length - 1];
+}
+
+let casePendingItem = null;
+let caseSpinTimer = null;
+let caseIsSpinning = false;
+let caseSpinComplete = false;
+
+function openCase() {
+    if (state.inventory.length >= 20) {
+        caseInventoryWarning.style.display = 'block';
+        setTimeout(() => {
+            caseInventoryWarning.style.display = 'none';
+        }, 4000);
+        return;
+    }
+    if (state.gems < 350) {
+        showToast('❌ Недостаточно алмазов! Нужно 350 💎');
+        return;
+    }
+    caseConfirmModal.classList.add('active');
+}
+
+caseBuyBtn.onclick = openCase;
+
+caseConfirmNo.onclick = function() {
+    caseConfirmModal.classList.remove('active');
+};
+
+caseConfirmYes.onclick = function() {
+    caseConfirmModal.classList.remove('active');
+    state.gems -= 350;
+    const item = rollCase();
+    casePendingItem = item;
+    startCaseSpin(item);
+};
+
+function startCaseSpin(finalItem) {
+    caseIsSpinning = true;
+    caseSpinComplete = false;
+    caseBuyBtn.disabled = true;
+    caseBuyBtn.textContent = '⏳ Открытие...';
+    caseResultTitle.textContent = '⏳ Вам выпало...';
+    caseResultEmoji.textContent = '🎰';
+    caseResultEmoji.className = 'case-emoji spinning';
+    caseResultName.textContent = '...';
+    caseResultModal.classList.add('active');
+    let rotation = 0;
+    let speed = 25;
+    let deceleration = 0.96;
+    let minSpeed = 0.3;
+    let step = 0;
+    let maxSteps = 55 + Math.floor(Math.random() * 20);
+    let delay = 40;
+    function spinStep() {
+        if (!caseIsSpinning) {
+            finishCase(finalItem);
+            return;
+        }
+        rotation += speed;
+        caseResultEmoji.style.transform = 'rotateY(' + rotation + 'deg) scale(1)';
+        if (step % 5 === 0) {
+            const randomItem = CASE_ITEMS[Math.floor(Math.random() * CASE_ITEMS.length)];
+            caseResultEmoji.textContent = randomItem.emoji;
+        }
+        step++;
+        speed *= deceleration;
+        if (speed < minSpeed || step >= maxSteps) {
+            finishCase(finalItem);
+            return;
+        }
+        caseSpinTimer = setTimeout(spinStep, delay);
+    }
+    caseSpinTimer = setTimeout(spinStep, 100);
+}
+
+function finishCase(finalItem) {
+    if (caseSpinComplete) return;
+    caseSpinComplete = true;
+    caseIsSpinning = false;
+    if (caseSpinTimer) {
+        clearTimeout(caseSpinTimer);
+        caseSpinTimer = null;
+    }
+    caseResultEmoji.textContent = finalItem.emoji;
+    caseResultEmoji.className = 'case-emoji final';
+    caseResultEmoji.style.transform = 'rotateY(-360deg) scale(1)';
+    caseResultTitle.textContent = '🎉 Вы получили: ' + finalItem.name;
+    caseResultName.textContent = finalItem.name;
+    if (state.inventory.length < 20) {
+        state.inventory.push({
+            id: 'case_' + finalItem.name.toLowerCase() + '_' + Date.now(),
+            emoji: finalItem.emoji,
+            name: finalItem.name,
+            sellTap: finalItem.sellTap || 0,
+            sellToken: finalItem.sellToken || 0,
+            sellGems: finalItem.sellGems || 0
+        });
+        SoundFX.play('win');
+        showToast('🎁 Выпал предмет: ' + finalItem.name);
+        updateUI();
+    }
+    caseBuyBtn.disabled = false;
+    caseBuyBtn.textContent = 'Buy 350 gems';
+}
+
+caseResultClose.onclick = function() {
+    caseResultModal.classList.remove('active');
+    if (caseIsSpinning && casePendingItem) {
+        finishCase(casePendingItem);
+    }
+    casePendingItem = null;
+    if (caseSpinTimer) {
+        clearTimeout(caseSpinTimer);
+        caseSpinTimer = null;
+    }
+};
+
+caseResultModal.addEventListener('click', function(e) {
+    if (e.target === caseResultModal) {
+        caseResultModal.classList.remove('active');
+        if (caseIsSpinning && casePendingItem) {
+            finishCase(casePendingItem);
+        }
+        casePendingItem = null;
+        if (caseSpinTimer) {
+            clearTimeout(caseSpinTimer);
+            caseSpinTimer = null;
+        }
+    }
+});
+
+    // ============================================================
+//  НАСТРОЙКИ
+// ============================================================
+function loadSettings() {
+    const saved = localStorage.getItem('homyak_settings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            settings = { ...settings, ...parsed };
+        } catch(e) {}
+    }
+    applySettings();
+}
+
+function saveSettings() {
+    localStorage.setItem('homyak_settings', JSON.stringify(settings));
+}
+
+function applySettings() {
+    if (settings.darkTheme) {
+        document.body.classList.add('dark-theme');
+        document.getElementById('settingsThemeToggle').textContent = '⚫ Чёрная';
+    } else {
+        document.body.classList.remove('dark-theme');
+        document.getElementById('settingsThemeToggle').textContent = '🌙 Фиолетовая';
+    }
+    document.getElementById('settingsSoundToggle').textContent = settings.soundEnabled ? '✅ Вкл' : '❌ Выкл';
+    document.getElementById('settingsCaseAnimationToggle').textContent = settings.caseAnimations ? '✅ Вкл' : '❌ Выкл';
+}
+
+document.getElementById('settingsSoundToggle').onclick = function() {
+    settings.soundEnabled = !settings.soundEnabled;
+    saveSettings();
+    applySettings();
+    showToast(settings.soundEnabled ? '🔊 Звуки включены' : '🔇 Звуки выключены');
+};
+
+document.getElementById('settingsThemeToggle').onclick = function() {
+    settings.darkTheme = !settings.darkTheme;
+    saveSettings();
+    applySettings();
+    showToast(settings.darkTheme ? '⚫ Чёрная тема' : '🌙 Фиолетовая тема');
+};
+
+document.getElementById('settingsCaseAnimationToggle').onclick = function() {
+    settings.caseAnimations = !settings.caseAnimations;
+    saveSettings();
+    applySettings();
+    showToast(settings.caseAnimations ? '🎡 Анимация кейсов включена' : '⚡ Анимация кейсов выключена (быстрое открытие)');
+};
+
+loadSettings();
+    // ============================================================
+//  НАСТРОЙКИ
+// ============================================================
+function loadSettings() {
+    const saved = localStorage.getItem('homyak_settings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            settings = { ...settings, ...parsed };
+        } catch(e) {}
+    }
+    applySettings();
+}
+
+function saveSettings() {
+    localStorage.setItem('homyak_settings', JSON.stringify(settings));
+}
+
+function applySettings() {
+    if (settings.darkTheme) {
+        document.body.classList.add('dark-theme');
+        document.getElementById('settingsThemeToggle').textContent = '⚫ Чёрная';
+    } else {
+        document.body.classList.remove('dark-theme');
+        document.getElementById('settingsThemeToggle').textContent = '🌙 Фиолетовая';
+    }
+    document.getElementById('settingsSoundToggle').textContent = settings.soundEnabled ? '✅ Вкл' : '❌ Выкл';
+    document.getElementById('settingsCaseAnimationToggle').textContent = settings.caseAnimations ? '✅ Вкл' : '❌ Выкл';
+}
+
+document.getElementById('settingsSoundToggle').onclick = function() {
+    settings.soundEnabled = !settings.soundEnabled;
+    saveSettings();
+    applySettings();
+    showToast(settings.soundEnabled ? '🔊 Звуки включены' : '🔇 Звуки выключены');
+};
+
+document.getElementById('settingsThemeToggle').onclick = function() {
+    settings.darkTheme = !settings.darkTheme;
+    saveSettings();
+    applySettings();
+    showToast(settings.darkTheme ? '⚫ Чёрная тема' : '🌙 Фиолетовая тема');
+};
+
+document.getElementById('settingsCaseAnimationToggle').onclick = function() {
+    settings.caseAnimations = !settings.caseAnimations;
+    saveSettings();
+    applySettings();
+    showToast(settings.caseAnimations ? '🎡 Анимация кейсов включена' : '⚡ Анимация кейсов выключена (быстрое открытие)');
+};
+
+loadSettings();
+    // ============================================================
+//  СБРОС
+// ============================================================
+resetBtn.onclick = async function() {
+    if (!confirm('⚠️ Сбросить весь прогресс? Это действие необратимо!')) return;
+    if (!state.currentUser) return showToast('❌ Вы не авторизованы');
+    try {
+        const res = await fetch(SERVER_URL + '/reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: state.currentUser })
+        });
+        const data = await res.json();
+        if (data.success) {
+            state.taps = 0;
+            state.tokens = 0;
+            state.gems = 0;
+            state.totalClicks = 0;
+            state.rebirthCount = 0;
+            state.clickPower = 1;
+            state.inventory = [];
+            state.dailyClaimed = [];
+            state.autoClickers = 0;
+            state.clickUpgrade = 0;
+            state.autoClickerPrice = 25;
+            state.clickUpgradePrice = 10;
+            state.playTime = 0;
+            state.minerBest = 0;
+            state.soldItems = 0;
+            state.activeBoosts = {};
+            workState.slots = Array(9).fill(null);
+            workState.hamsterIdCounter = 0;
+            updateUI();
+            renderWorkGrid();
+            showToast('🔄 Прогресс сброшен!');
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+// ============================================================
+//  АВТОСОХРАНЕНИЕ
+// ============================================================
+setInterval(saveToServer, 5000);
+setInterval(() => {
+    const now = Date.now();
+    let changed = false;
+    for (const key in state.activeBoosts) {
+        if (state.activeBoosts[key] < now && state.activeBoosts[key] !== Infinity) {
+            delete state.activeBoosts[key];
+            changed = true;
+        }
+    }
+    if (changed) {
+        updateUI();
+        showToast('⏳ Бусты истекли');
+    }
+}, 10000);
+
+loadMinerState();
+updateMinerUI();
+setInterval(() => {
+    if (minerState.cooldownUntil > 0) {
+        updateMinerUI();
+    }
+}, 1000);
+
+startPlayTimeCounter();
+updateUI();
+renderWorkGrid();
+loadChat();
+checkEventStatus();
+checkWidgetStatus();
+console.log('🐹 HomyakV3 — Версия 7.1 (UPDATE) загружена!');
+</script>
+</body>
+</html>
