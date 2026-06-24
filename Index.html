@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐹 HomyakV3</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none;font-family:'Segoe UI',Arial,sans-serif}
+        body{background:#0a0a1a;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:12px;background-image:radial-gradient(circle at 20% 30%,#1a0a2a,#0a0a1a)}
+        #app{max-width:480px;width:100%;background:linear-gradient(145deg,#1a0a2e,#2a1a3e);border-radius:48px;padding:20px 16px 24px;box-shadow:0 0 80px rgba(180,80,255,0.2);border:1px solid #4a2a6a;text-align:center}
+        .auth-form{padding:30px 20px}
+        .auth-form h2{color:#d4b8ff;margin-bottom:20px}
+        .auth-form input{width:100%;padding:12px;margin:8px 0;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:14px;color:#fff;font-size:16px;outline:none}
+        .auth-form input:focus{border-color:#ffd700}
+        .auth-form button{width:100%;padding:14px;border:none;border-radius:14px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;font-size:18px;cursor:pointer;margin:6px 0}
+        .auth-form button:active{transform:scale(.94)}
+        .auth-form .switch{color:#7a5a9a;cursor:pointer;margin-top:10px;display:block}
+        .auth-form .switch:hover{color:#b8a0dd}
+        .header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+        .balance{background:#0a0a1a;padding:6px 14px;border-radius:30px;border:1px solid #ffd700;color:#ffd700;font-size:14px;font-weight:bold}
+        .balance span{color:#fff}
+        .tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+        .tab-btn{padding:6px 14px;border:none;border-radius:20px;background:#2a1a4a;color:#7a5a9a;font-weight:bold;font-size:12px;cursor:pointer;transition:.15s;border:1px solid transparent}
+        .tab-btn.active{background:#4a2a6a;color:#d4b8ff;border-color:#6a4a8a}
+        .tab-btn .heart{font-size:20px;display:inline-block}
+        .tab-content{display:none;animation:fadeIn .25s}
+        .tab-content.active{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        .hamster-area{background:radial-gradient(circle at 50% 40%,#2a1a4a,#0a0a1a);border-radius:60px;padding:16px;margin:8px 0;border:1px solid #4a2a6a;cursor:pointer;touch-action:none;position:relative;transition:0.05s}
+        .hamster-area:active{transform:scale(0.97)}
+        .hamster-emoji{font-size:80px;text-align:center;display:block;filter:drop-shadow(0 0 30px rgba(180,100,255,0.4))}
+        .click-effect{position:absolute;color:#ffd700;font-weight:bold;font-size:24px;pointer-events:none;animation:floatUp .7s ease-out forwards}
+        @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(1.4)}}
+        .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+        .stat-box{background:#1a0a2a;border-radius:14px;padding:8px 4px;border:1px solid #3a1a5a}
+        .stat-box .label{color:#7a5a9a;font-size:10px;text-transform:uppercase}
+        .stat-box .value{color:#d4b8ff;font-size:16px;font-weight:bold}
+        .rebirth-progress{background:#1a1a2a;border-radius:16px;padding:8px 12px;margin:6px 0;border:1px solid #3a2a5a}
+        .rebirth-progress .label{color:#7a5a9a;font-size:12px}
+        .rebirth-progress .bar{width:100%;height:10px;background:#0a0a1a;border-radius:10px;overflow:hidden;margin:4px 0}
+        .rebirth-progress .fill{height:100%;width:0%;background:linear-gradient(90deg,#ffd700,#ff8800);border-radius:10px;transition:width .3s}
+        .rebirth-progress .text{color:#b8a0dd;font-size:12px}
+        .rebirth-btn{width:100%;padding:12px;border:none;border-radius:20px;background:linear-gradient(135deg,#6a4a1a,#8a6a2a);color:#ffd700;font-weight:bold;font-size:16px;cursor:pointer;margin:8px 0;transition:.1s}
+        .rebirth-btn:active{transform:scale(.96)}
+        .rebirth-btn:disabled{opacity:.4;pointer-events:none}
+        .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+        .shop-item{background:#1a0a2a;border-radius:16px;padding:10px 6px;border:1px solid #3a2a5a;cursor:pointer;transition:.1s}
+        .shop-item:active{transform:scale(.94)}
+        .shop-item .emoji{font-size:28px}
+        .shop-item .name{color:#d4b8ff;font-size:12px;font-weight:bold}
+        .shop-item .price{color:#ffd700;font-size:11px}
+        .shop-item.locked{opacity:.4;pointer-events:none}
+        .shop-item.owned{border-color:#ffd700;background:#2a1a3e}
+        .shop-item .price-taps{color:#ffaa00}
+        .shop-item .price-tokens{color:#ff66ff}
+        .shop-item .price-gems{color:#00ddff}
+        .inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}
+        .inv-slot{background:#1a0a2a;border:1px solid #3a2a5a;border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:28px;color:#4a2a6a;transition:.1s;flex-direction:column;position:relative}
+        .inv-slot.filled{border-color:#ffd700;color:#ffd700;background:#2a1a3e;cursor:pointer}
+        .inv-slot.filled:active{transform:scale(.9)}
+        .inv-slot .qty{font-size:10px;color:#7a5a9a;position:absolute;bottom:2px;right:6px}
+        .market-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+        .market-item{background:#1a0a2a;border-radius:16px;padding:10px 6px;border:1px solid #3a2a5a;text-align:center}
+        .market-item .emoji{font-size:28px}
+        .market-item .name{color:#d4b8ff;font-size:12px;font-weight:bold}
+        .market-item .price{color:#ffd700;font-size:11px}
+        .market-sell{display:flex;gap:6px;margin-top:4px;justify-content:center}
+        .market-sell button{padding:4px 10px;border:none;border-radius:10px;font-size:11px;font-weight:bold;cursor:pointer}
+        .market-sell .tap-btn{background:#4a2a6a;color:#d4b8ff}
+        .market-sell .token-btn{background:#6a4a1a;color:#ffd700}
+        .market-sell .gem-btn{background:#00ddff;color:#0a0a1a}
+        .market-sell button:active{transform:scale(.94)}
+        .daily-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+        .daily-item{background:#1a0a2a;border-radius:14px;padding:8px 4px;border:1px solid #3a2a5a;cursor:pointer;transition:.1s;text-align:center}
+        .daily-item:active{transform:scale(.94)}
+        .daily-item .emoji{font-size:24px}
+        .daily-item .day{color:#7a5a9a;font-size:10px}
+        .daily-item .reward{color:#d4b8ff;font-size:11px;font-weight:bold}
+        .daily-item.claimed{opacity:.4;pointer-events:none}
+        .daily-item .unknown{color:#4a2a6a;font-size:24px}
+        .daily-item.today{border-color:#ffd700}
+        .daily-timer{color:#7a5a9a;font-size:12px;margin-top:6px}
+        .daily-timer span{color:#ffd700;font-weight:bold}
+        .bottom-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+        .bottom-row button{flex:1;padding:8px;border:none;border-radius:16px;font-weight:bold;font-size:12px;cursor:pointer;background:#2a1a4a;color:#b8a0dd;border:1px solid #4a2a6a;transition:.1s;min-width:60px}
+        .bottom-row button:active{transform:scale(.94)}
+        .bottom-row .reset-btn{background:#3a1a2a;border-color:#6a2a3a;color:#f88}
+        .version{color:#4a2a6a;font-size:10px;margin-top:12px;text-align:center}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);justify-content:center;align-items:center;z-index:999}
+        .modal.active{display:flex}
+        .modal-content{background:#1a0a2e;border-radius:32px;padding:24px;max-width:360px;width:90%;border:2px solid #4a2a6a;text-align:center}
+        .modal-content h2{color:#d4b8ff;margin-bottom:12px}
+        .modal-content p{color:#b8a0dd;font-size:14px;margin:6px 0}
+        .modal-content button{width:100%;padding:12px;border:none;border-radius:14px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;font-size:16px;cursor:pointer;margin:6px 0}
+        .modal-content button:active{transform:scale(.94)}
+        .modal-content .close-btn{background:#3a1a2a;color:#f88}
+        .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a0a2e;padding:12px 24px;border-radius:30px;border:1px solid #ffd700;color:#ffd700;font-weight:bold;font-size:14px;z-index:1000;animation:toastAnim 2s ease-out forwards;pointer-events:none}
+        @keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(20px)}20%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+        .stats-bottom{background:#0a0a1a;border-radius:16px;padding:10px;margin:10px 0;border:1px solid #3a2a5a;text-align:left;font-size:12px;color:#7a5a9a}
+        .stats-bottom div{padding:2px 0}
+        .stats-bottom span{color:#d4b8ff;font-weight:bold}
+        .miner-area{background:#1a1a2a;border-radius:20px;padding:16px;margin:8px 0;border:2px solid #4a2a6a}
+        .miner-cell{background:#1a1a2a;border:2px solid #3a2a5a;border-radius:16px;padding:16px 0;font-size:24px;font-weight:bold;color:#b8a0dd;cursor:pointer;transition:.15s;text-align:center}
+        .miner-cell:active{transform:scale(.94)}
+        .miner-cell.green{background:#0a2a0a;border-color:#6f6;color:#6f6}
+        .miner-cell.used{opacity:.3;pointer-events:none}
+        .miner-cell.bomb{background:#2a0a0a;border-color:#ff0000;color:#ff0000;animation:bombFlash .5s ease-in-out}
+        @keyframes bombFlash{0%{transform:scale(1)}50%{transform:scale(1.4);background:#ff0000;color:#fff}100%{transform:scale(1)}}
+        .miner-timer{font-size:20px;color:#ffd700;margin:6px 0}
+        .miner-score{color:#b8a0dd;font-size:16px}
+        .miner-cooldown{color:#ff6666;font-size:14px;margin:6px 0;display:none}
+        .miner-buttons{display:flex;gap:8px;margin:10px 0;justify-content:center}
+        .miner-buttons button{padding:10px 20px;border:none;border-radius:16px;font-weight:bold;font-size:14px;cursor:pointer;transition:.1s}
+        .miner-buttons button:active{transform:scale(.94)}
+        .miner-buttons .claim-btn{background:#228833;color:#fff}
+        .miner-buttons .start-btn{background:#4a2a6a;color:#d4b8ff}
+        .owner-panel{background:#0a0a1a;border-radius:16px;padding:12px;border:1px solid #ffd700;margin-top:12px;display:none}
+        .owner-panel h4{color:#ffd700;font-size:14px;margin-bottom:6px}
+        .owner-panel .btn-group{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+        .owner-panel button{padding:6px 12px;border:none;border-radius:12px;font-weight:bold;font-size:12px;cursor:pointer;margin:2px;background:#4a2a6a;color:#d4b8ff;transition:.1s}
+        .owner-panel button:active{transform:scale(.94)}
+        .owner-panel .green{background:#228833;color:#fff}
+        .owner-panel .gold{background:#aa7722;color:#fff}
+        .owner-panel .red{background:#aa3344;color:#fff}
+        .admin-panel{background:#0a0a1a;border-radius:16px;padding:12px;border:1px solid #ff6600;margin-top:12px;display:none}
+        .admin-panel h4{color:#ff6600;font-size:14px;margin-bottom:6px}
+        .admin-panel .btn-group{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+        .admin-panel button{padding:6px 12px;border:none;border-radius:12px;font-weight:bold;font-size:12px;cursor:pointer;margin:2px;background:#4a2a6a;color:#d4b8ff;transition:.1s}
+        .admin-panel button:active{transform:scale(.94)}
+        .admin-panel .green{background:#228833;color:#fff}
+        .admin-panel .gold{background:#aa7722;color:#fff}
+        .admin-panel .admin{background:#ff6600;color:#fff}
+        .unlock-text{color:#ffd700;font-size:16px;font-weight:bold;animation:unlockPulse 0.5s ease-in-out}
+        @keyframes unlockPulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+        @media(max-width:420px){.hamster-emoji{font-size:60px}.daily-grid{grid-template-columns:repeat(4,1fr)}.inventory-grid{grid-template-columns:repeat(5,1fr)}.miner-cell{font-size:18px;padding:12px 0}}
+        .celebration-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);display:flex;justify-content:center;align-items:center;z-index:9999;flex-direction:column;animation:fadeInCelebration .5s ease-out}
+        @keyframes fadeInCelebration{from{opacity:0}to{opacity:1}}
+        .celebration-text{font-size:34px;font-weight:bold;color:#ffd700;text-align:center;text-shadow:0 0 50px rgba(255,215,0,0.6);animation:pulseText 1.5s ease-in-out infinite;padding:20px;line-height:1.4}
+        @keyframes pulseText{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+        .celebration-close{position:absolute;top:20px;right:20px;font-size:30px;color:#fff;cursor:pointer;background:rgba(255,255,255,0.1);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.2)}
+        .celebration-close:active{transform:scale(.9)}
+        .heart-beat{animation:heartBeat 0.5s ease-in-out infinite}
+        @keyframes heartBeat{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+        @keyframes bloodPulse{0%{opacity:.7}50%{opacity:1}100%{opacity:.7}}
+        .blood-pulse{animation:bloodPulse 2s ease-in-out infinite}
+        .explode-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at center,#ff0000,#000);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:80px;font-weight:bold;color:#fff;animation:explodeAnim .8s ease-out forwards}
+        @keyframes explodeAnim{0%{transform:scale(.5);opacity:0}50%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:0}}
+        .case-spin-3d{display:inline-block;perspective:800px;width:120px;height:120px;margin:0 auto}
+        .case-spin-3d .case-emoji{display:inline-block;transform-style:preserve-3d;font-size:80px;line-height:120px;transition:none;will-change:transform}
+        .case-spin-3d .case-emoji.spinning{animation:caseSpinLeft 0.05s linear infinite}
+        @keyframes caseSpinLeft{0%{transform:rotateY(0deg) scale(1)}100%{transform:rotateY(-360deg) scale(1)}}
+        .case-spin-3d .case-emoji.final{animation:casePopLeft 0.6s ease-out forwards}
+        @keyframes casePopLeft{0%{transform:rotateY(0deg) scale(0.3) rotateX(10deg);opacity:0}30%{transform:rotateY(-180deg) scale(1.6) rotateX(5deg);opacity:1}60%{transform:rotateY(-300deg) scale(1.1) rotateX(2deg)}100%{transform:rotateY(-360deg) scale(1) rotateX(0deg);opacity:1}}
+        .case-spin-3d .case-emoji.shake{animation:caseShake 0.3s ease-in-out}
+        @keyframes caseShake{0%{transform:rotateY(0deg) scale(1)}25%{transform:rotateY(-10deg) scale(1.05)}50%{transform:rotateY(10deg) scale(1.05)}75%{transform:rotateY(-5deg) scale(1.02)}100%{transform:rotateY(0deg) scale(1)}}
+        body.dark-theme{background:#000;background-image:none}
+        body.dark-theme #app{background:#0a0a0a;border-color:#1a1a1a;box-shadow:none}
+        body.dark-theme .tab-btn{background:#111;color:#666;border-color:#222}
+        body.dark-theme .tab-btn.active{background:#222;color:#aaa;border-color:#444}
+        body.dark-theme .balance{background:#111;border-color:#333;color:#888}
+        body.dark-theme .stat-box{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .stat-box .value{color:#aaa}
+        body.dark-theme .hamster-area{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .shop-item{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .shop-item .name{color:#aaa}
+        body.dark-theme .inv-slot{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .inv-slot.filled{border-color:#333;background:#111}
+        body.dark-theme .miner-area{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .miner-cell{background:#0a0a0a;border-color:#1a1a1a;color:#666}
+        body.dark-theme .daily-item{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .market-item{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .rebirth-progress{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .bottom-row button{background:#111;border-color:#222;color:#666}
+        body.dark-theme .bottom-row .reset-btn{background:#1a0a0a;border-color:#2a1a1a}
+        body.dark-theme .stats-bottom{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .stats-bottom span{color:#aaa}
+        body.dark-theme .owner-panel{background:#0a0a0a;border-color:#333}
+        body.dark-theme .modal-content{background:#0a0a0a;border-color:#1a1a1a}
+        body.dark-theme .modal-content h2{color:#aaa}
+        body.dark-theme .modal-content p{color:#666}
+        body.dark-theme .auth-form input{background:#0a0a0a;border-color:#1a1a1a;color:#aaa}
+        body.dark-theme .auth-form h2{color:#aaa}
+        body.dark-theme .version{color:#333}
+        body.dark-theme .toast{background:#0a0a0a;border-color:#333;color:#888}
+        body.dark-theme .settings-toggle{background:#111;color:#666;border-color:#222}
+        body.dark-theme .settings-toggle.active{background:#222;color:#aaa;border-color:#444}
+        .work-slot{background:#1a0a2a;border:2px solid #3a2a5a;border-radius:16px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:40px;color:#4a2a6a;cursor:pointer;transition:.15s;position:relative}
+        .work-slot .hamster-name{font-size:10px;color:#7a5a9a;position:absolute;bottom:4px;text-align:center}
+        .work-slot .status-icon{font-size:16px;position:absolute;top:4px;right:6px}
+        .work-slot .timer-text{font-size:9px;color:#ff6666;position:absolute;bottom:20px}
+        .work-slot.filled{background:#2a1a3e;border-color:#6a4a8a}
+        .work-slot.asleep{background:#1a1a2a;border-color:#4a2a2a;opacity:.6}
+        .work-slot .actions{display:flex;gap:4px;margin-top:2px;flex-wrap:wrap;justify-content:center}
+        .work-slot .actions button{padding:2px 6px;border:none;border-radius:8px;font-size:9px;cursor:pointer}
+        .work-slot .actions .wake-btn{background:#ff8800;color:#fff}
+        .work-slot .actions .remove-btn{background:#883322;color:#fff}
+        .chat-messages{background:#0a0a1a;border-radius:12px;padding:10px;height:300px;overflow-y:auto;border:1px solid #3a2a5a;text-align:left;font-size:12px;color:#b8a0dd;display:flex;flex-direction:column;gap:4px}
+        .chat-messages .msg{background:#1a0a2a;padding:4px 8px;border-radius:8px;word-break:break-word}
+        .chat-messages .msg .name{color:#ffd700;font-weight:bold}
+        .chat-messages .msg .text{color:#b8a0dd}
+        .chat-input{display:flex;gap:8px;margin-top:8px}
+        .chat-input input{flex:1;padding:8px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:12px;color:#fff;font-size:14px;outline:none}
+        .chat-input button{padding:8px 16px;border:none;border-radius:12px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;cursor:pointer}
+        .owner-ban-input{width:100%;padding:8px;margin:4px 0;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:8px;color:#fff;font-size:12px}
+        .owner-ban-btn{padding:6px 12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin:2px}
+        .owner-ban-btn.ban{background:#aa3344;color:#fff}
+        .owner-ban-btn.unban{background:#228833;color:#fff}
+        .owner-ban-btn.give{background:#aa7722;color:#fff}
+        .owner-ban-btn.kick{background:#aa7722;color:#fff}
+        .owner-ban-btn.info{background:#4a2a6a;color:#d4b8ff}
+        .info-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);justify-content:center;align-items:center;z-index:1000}
+        .info-modal.active{display:flex}
+        .info-modal-content{background:#1a0a2e;border-radius:24px;padding:24px;max-width:360px;width:90%;border:2px solid #ffd700;text-align:center;color:#d4b8ff}
+        .info-modal-content h2{color:#ffd700;margin-bottom:12px}
+        .info-modal-content button{margin-top:12px;padding:10px 20px;border:none;border-radius:12px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;cursor:pointer}
+        .verified-badge{display:inline-block;width:18px;height:18px;background:#00ddff;border-radius:50%;color:#fff;font-size:11px;text-align:center;line-height:18px;font-weight:bold;margin-left:3px;box-shadow:0 0 14px rgba(0,220,255,0.7);text-shadow:0 0 4px rgba(0,0,0,0.3);vertical-align:middle;border:1px solid rgba(255,255,255,0.2)}
+        .event-disco{background:linear-gradient(90deg,#ff0000,#ff8800,#ffff00,#00ff00,#0088ff,#8800ff,#ff00ff,#ff0000);background-size:300% 100%;animation:disco 2s linear infinite;color:#fff;text-shadow:0 0 10px #fff}
+        @keyframes disco{0%{background-position:0% 0%}100%{background-position:300% 0%}}
+        .event-volcano{background:#ff4500;color:#fff;text-shadow:0 0 20px #ff8800;border-color:#ff6600}
+        .event-volcano .tab-btn{background:#ff4500;color:#fff;border-color:#ff6600}
+        .event-volcano .tab-btn.active{background:#ff6600;color:#fff}
+        .event-lightning{background:#00ddff;color:#000;text-shadow:0 0 10px #ffffff;border-color:#00ffff}
+        .event-lightning .tab-btn{background:#00ddff;color:#000;border-color:#00ffff}
+        .event-lightning .tab-btn.active{background:#00ffff;color:#000}
+        .admin-widget{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#ff0000;color:#fff;padding:12px 24px;border-radius:30px;font-weight:bold;font-size:16px;z-index:9999;box-shadow:0 0 30px rgba(255,0,0,0.6);animation:widgetPulse 1.5s ease-in-out infinite}
+        @keyframes widgetPulse{0%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}100%{transform:translateX(-50%) scale(1)}}
+    </style>
+</head>
+<body>
+<div id="app">
+  <!-- АВТОРИЗАЦИЯ -->
+<div id="authPanel">
+    <div id="loginForm" class="auth-form">
+        <h2>🔐 Вход</h2>
+        <input type="text" id="loginUsername" placeholder="Ник">
+        <input type="password" id="loginPassword" placeholder="Пароль">
+        <button id="loginBtn">Войти</button>
+        <span class="switch" id="showRegister">Нет аккаунта? Зарегистрироваться</span>
+    </div>
+    <div id="registerForm" class="auth-form" style="display:none;">
+        <h2>📝 Регистрация</h2>
+        <input type="text" id="regUsername" placeholder="Ник">
+        <input type="password" id="regPassword" placeholder="Пароль">
+        <button id="registerBtn">Зарегистрироваться</button>
+        <span class="switch" id="showLogin">Уже есть аккаунт? Войти</span>
+        <div style="margin-top:10px;color:#7a5a9a;font-size:12px;">
+            🔗 Реферальный код: <input type="text" id="refCodeInput" placeholder="Введите код друга" style="width:60%;padding:4px 8px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:8px;color:#fff;font-size:12px;">
+        </div>
+    </div>
+</div>
+
+<!-- ИГРОВАЯ ПАНЕЛЬ -->
+<div id="gamePanel" style="display:none;">
+    <div class="header">
+        <div class="balance">💰 <span id="tapDisplay">0</span></div>
+        <div class="balance">🪙 <span id="tokenDisplay">0</span></div>
+        <div class="balance">💎 <span id="gemDisplay">0</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px;">
+        <span style="color:#7a5a9a;font-size:12px;" id="userNameDisplay">👤 Игрок</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+            <button id="changePasswordBtn" style="background:transparent;border:1px solid #4a2a6a;color:#7a5a9a;padding:4px 12px;border-radius:12px;font-size:11px;cursor:pointer;">🔑 Сменить пароль</button>
+            <button id="logoutBtn" style="background:transparent;border:1px solid #4a2a6a;color:#7a5a9a;padding:4px 12px;border-radius:12px;font-size:11px;cursor:pointer;">🚪 Выйти</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="main">🐹 Главная</button>
+        <button class="tab-btn" data-tab="inventory">🎒 Инвентарь</button>
+        <button class="tab-btn" data-tab="market">🏪 Рынок</button>
+        <button class="tab-btn" data-tab="daily">📅 Награды</button>
+        <button class="tab-btn" data-tab="shop">🛒 Магазин</button>
+        <button class="tab-btn" data-tab="miner" id="minerTabBtn" style="display:none;">⛏️ Шахтёр</button>
+        <button class="tab-btn" data-tab="owner">🛠️ OWNER</button>
+        <button class="tab-btn" data-tab="admin">🛠️ ADMIN</button>
+        <button class="tab-btn" data-tab="promo">🎁 Промокоды</button>
+        <button class="tab-btn" data-tab="cases">🎰 CASE</button>
+        <button class="tab-btn" data-tab="settings">🛠️ Настройки</button>
+        <button class="tab-btn" data-tab="work">🏢 Работа хомяков</button>
+        <button class="tab-btn" data-tab="chat">💬 Чат</button>
+    </div>
+    <div class="tab-content active" id="tab-main">
+    <div class="hamster-area" id="hamsterArea">
+        <span class="hamster-emoji" id="hamsterEmoji">🐹</span>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-box"><div class="label">Кликов</div><div class="value" id="totalClicks">0</div></div>
+        <div class="stat-box"><div class="label">Сила клика</div><div class="value" id="clickPower">1</div></div>
+        <div class="stat-box"><div class="label">Перерождений</div><div class="value" id="rebirthCount">0</div></div>
+    </div>
+    <div class="rebirth-progress">
+        <div class="label">⚡ Прогресс до перерождения</div>
+        <div class="bar"><div class="fill" id="rebirthFill"></div></div>
+        <div class="text" id="rebirthProgressText">0 / 1000 кликов</div>
+    </div>
+    <div id="rebirthInfo" style="color:#7a5a9a;font-size:12px;margin:4px 0;">Требуется 1000 кликов</div>
+    <button class="rebirth-btn" id="rebirthBtn">🔄 Переродиться</button>
+</div>
+
+<div class="tab-content" id="tab-inventory">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🎒 Инвентарь</h3>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Здесь хранятся твои предметы</div>
+    <div class="inventory-grid" id="inventoryGrid"></div>
+    <div style="color:#7a5a9a;font-size:11px;margin-top:6px;">Слотов: <span id="invCount">0</span>/20</div>
+</div>
+
+<div class="tab-content" id="tab-market">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🏪 Чёрный рынок</h3>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Продавай предметы за тапы, токены или алмазы</div>
+    <div class="market-grid" id="marketGrid"></div>
+</div>
+
+<div class="tab-content" id="tab-daily">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">📅 Ежедневные награды</h3>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Заходи каждый день и забирай!</div>
+    <div class="daily-grid" id="dailyGrid"></div>
+    <div class="daily-timer" id="dailyTimer">⏳ До следующей награды: <span id="dailyCountdown">--:--:--</span></div>
+</div>
+<div class="tab-content" id="tab-shop">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🛒 Магазин</h3>
+    <div class="shop-grid" id="shopGrid"></div>
+</div>
+
+<div class="tab-content" id="tab-miner">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">⛏️ Шахтёр</h3>
+    <div id="minerUnlockText" style="display:none;color:#ffd700;font-size:16px;font-weight:bold;animation:unlockPulse 0.5s ease-in-out;margin-bottom:8px;">⛏️ Шахтёр открыт!</div>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Копай! Бомбы (4–5) спрятаны случайно в каждой игре</div>
+    <div class="miner-area">
+        <div id="minerGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0;">
+            <div class="miner-cell" data-index="0">1</div>
+            <div class="miner-cell" data-index="1">2</div>
+            <div class="miner-cell" data-index="2">3</div>
+            <div class="miner-cell" data-index="3">4</div>
+            <div class="miner-cell" data-index="4">5</div>
+            <div class="miner-cell" data-index="5">6</div>
+            <div class="miner-cell" data-index="6">7</div>
+            <div class="miner-cell" data-index="7">8</div>
+            <div class="miner-cell" data-index="8">9</div>
+        </div>
+        <div class="miner-timer" id="minerTimer">⏱️ 30с</div>
+        <div class="miner-score" id="minerScore">💰 Накоплено: 0</div>
+        <div class="miner-cooldown" id="minerCooldown">⏳ Подождите <span id="minerCooldownTime">5:00</span></div>
+        <div class="miner-buttons">
+            <button class="start-btn" id="minerStart">▶️ Начать</button>
+            <button class="claim-btn" id="minerClaim">✅ Забрать</button>
+        </div>
+    </div>
+</div>
+<div class="tab-content" id="tab-owner">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🛠️ OWNER</h3>
+    <div style="color:#7a5a9a;font-size:12px;margin-bottom:6px;">Введите код для доступа</div>
+    <input type="password" id="ownerPassword" placeholder="Введите код" style="width:100%;padding:12px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:14px;color:#fff;font-size:16px;outline:none;margin:8px 0;">
+    <button id="ownerLoginBtn" style="width:100%;padding:12px;border:none;border-radius:14px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;font-size:16px;cursor:pointer;">Войти</button>
+    <div class="owner-panel" id="ownerPanel">
+        <h4>⚡ Панель создателя</h4>
+        <div class="btn-group">
+            <button class="gold" id="creatorBoost10sec">10x (10 сек)</button>
+            <button class="gold" id="creatorBoost10hour">10x (1 час)</button>
+            <button class="gold" id="creatorBoost10forever">10x (навсегда)</button>
+            <button class="gold" id="creatorBoost50sec">50x (10 сек)</button>
+            <button class="gold" id="creatorBoost50hour">50x (1 час)</button>
+            <button class="gold" id="creatorBoost50forever">50x (навсегда)</button>
+            <button class="green" id="creatorInfiniteTokens">🪙 ∞ токены</button>
+            <button class="green" id="creatorInfiniteTaps">💰 ∞ тапы</button>
+            <button class="green" id="creatorInfiniteGems">💎 ∞ алмазы</button>
+            <button class="green" id="creatorAdd50">💎 +50 алмазов</button>
+            <button class="green" id="creatorAdd100">💎 +100 алмазов</button>
+            <button class="green" id="creatorAdd500">💎 +500 алмазов</button>
+            <button class="green" id="creatorSkipMinerCooldown">⏭️ Пропустить таймер шахтёра</button>
+            <button class="green" id="creatorUnlockDaily">📅 Разблокировать всё в ежедневных заданиях</button>
+            <button class="green" id="creatorGiveAll">🎁 Дать всё</button>
+        </div>
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ff6666;">🚫 Глобальный бан</h4>
+            <input type="text" id="banInput" class="owner-ban-input" placeholder="Ник игрока">
+            <button id="banBtn" class="owner-ban-btn ban">🚫 Забанить</button>
+            <button id="unbanBtn" class="owner-ban-btn unban">✅ Разбанить</button>
+            <button id="kickBtn" class="owner-ban-btn kick">👢 Кикнуть</button>
+            <div style="margin-top:4px;">
+                <input type="number" id="banDuration" class="owner-ban-input" placeholder="Секунд бана" style="width:40%;display:inline-block;">
+                <input type="text" id="banReasonInput" class="owner-ban-input" placeholder="Причина бана" style="width:55%;display:inline-block;">
+                <button id="banTempBtn" class="owner-ban-btn ban">⏳ Бан на время</button>
+            </div>
+            <h4 style="color:#ffd700;margin-top:8px;">🎁 Выдача предметов</h4>
+            <input type="text" id="giveInput" class="owner-ban-input" placeholder="Ник игрока">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                <button class="owner-ban-btn give" data-item='{"id":"case_pig","emoji":"🥓","name":"Pig","sellTap":1000,"sellToken":1,"sellGems":0}'>🥓 Pig</button>
+                <button class="owner-ban-btn give" data-item='{"id":"case_vine","emoji":"🍷","name":"Vine","sellTap":5000,"sellToken":5,"sellGems":0}'>🍷 Vine</button>
+                <button class="owner-ban-btn give" data-item='{"id":"case_company","emoji":"🏢","name":"Company","sellTap":30000,"sellToken":20,"sellGems":0}'>🏢 Company</button>
+                <button class="owner-ban-btn give" data-item='{"id":"case_we1qs","emoji":"😝","name":"We1qs","sellTap":50000,"sellToken":30,"sellGems":0}'>😝 We1qs</button>
+                <button class="owner-ban-btn give" data-item='{"id":"case_urvxh","emoji":"🥀","name":"Urvxh","sellTap":70000,"sellToken":55,"sellGems":0}'>🥀 Urvxh</button>
+                <button class="owner-ban-btn give" data-item='{"id":"case_werxhfrag","emoji":"💼","name":"werxhfrag","sellTap":10000000,"sellToken":0,"sellGems":10000}'>💼 werxhfrag</button>
+                <button class="owner-ban-btn give" data-item='{"id":"iron_arm","emoji":"🦾","name":"Железная рука","sellTap":500000,"sellToken":100,"sellGems":0}'>🦾 Ж. рука</button>
+                <button class="owner-ban-btn give" data-item='{"id":"iron_leg","emoji":"🦿","name":"Железная нога","sellTap":700000,"sellToken":150,"sellGems":0}'>🦿 Ж. нога</button>
+                <button class="owner-ban-btn give" data-item='{"id":"gold","emoji":"🥇","name":"Золото","sellTap":900000,"sellToken":350,"sellGems":0}'>🥇 Золото</button>
+                <button class="owner-ban-btn give" data-item='{"id":"secret","emoji":"🔮","name":"Секретный материал","sellTap":999999999,"sellToken":1000,"sellGems":0}'>🔮 Секрет</button>
+                <button class="owner-ban-btn give" data-item='{"id":"dragon_eye","emoji":"🐉","name":"Глаз дракона","sellTap":0,"sellToken":250,"sellGems":20}'>🐉 Глаз дракона</button>
+                <button class="owner-ban-btn give" data-item='{"id":"golden_glasses","emoji":"🕶️","name":"Золотые очки","sellTap":10000,"sellToken":50,"sellGems":0}'>🕶️ Зол. очки</button>
+                <button class="owner-ban-btn give" data-item='{"id":"diamond_item","emoji":"💎","name":"Алмаз (предмет)","sellTap":0,"sellToken":20,"sellGems":5}'>💎 Алмаз</button>
+                <button class="owner-ban-btn give" data-item='{"id":"amethyst","emoji":"🟣","name":"Аметист","sellTap":5000,"sellToken":20,"sellGems":0}'>🟣 Аметист</button>
+                <button class="owner-ban-btn give" data-item='{"id":"zov","emoji":"🇷🇺","name":"Zov","sellTap":999999999,"sellToken":999999999,"sellGems":999999999}'>🇷🇺 Zov</button>
+            </div>
+            <div id="banStatus" style="color:#b8a0dd;font-size:11px;margin-top:4px;"></div>
+        </div>
+    </div>
+                  </div>
+                          <!-- ОТПРАВКА СООБЩЕНИЙ (OWNER) -->
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ffd700;">📢 Отправка сообщений</h4>
+            <input type="text" id="ownerGlobalMsg" class="owner-ban-input" placeholder="Глобальное сообщение (всем)">
+            <button id="ownerSendGlobalBtn" class="owner-ban-btn give" style="background:#4a2a6a;">🌍 Отправить всем</button>
+            <input type="text" id="ownerLocalMsg" class="owner-ban-input" placeholder="Локальное сообщение (только вам)" style="margin-top:4px;">
+            <button id="ownerSendLocalBtn" class="owner-ban-btn info">📨 Отправить себе</button>
+        </div>
+    </div>
+</div>
+<div class="tab-content" id="tab-admin">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🛠️ ADMIN</h3>
+    <div style="color:#7a5a9a;font-size:12px;margin-bottom:6px;">Введите код для доступа</div>
+    <input type="password" id="adminPassword" placeholder="Введите код" style="width:100%;padding:12px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:14px;color:#fff;font-size:16px;outline:none;margin:8px 0;">
+    <button id="adminLoginBtn" style="width:100%;padding:12px;border:none;border-radius:14px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;font-size:16px;cursor:pointer;">Войти</button>
+    <div class="admin-panel" id="adminPanel">
+        <h4>⚡ Панель администратора</h4>
+        <div class="btn-group">
+            <button class="admin" id="adminGiveAll">🎁 Дать всё</button>
+            <button class="green" id="adminGiveIronLeg">🦿 Ж. нога</button>
+            <button class="green" id="adminGiveIronArm">🦾 Ж. рука</button>
+            <button class="green" id="adminGiveGold">🥇 Золото</button>
+            <button class="green" id="adminGiveSecret">🔮 Секрет</button>
+            <button class="green" id="adminGiveAmethyst">🟣 Аметист</button>
+            <button class="green" id="adminGiveGoldenGlasses">🕶️ Зол. очки</button>
+            <button class="green" id="adminGiveDragonEye">🐉 Глаз дракона</button>
+            <button class="green" id="adminGiveDiamondItem">💎 Алмаз</button>
+            <button class="green" id="adminGiveZov">🇷🇺 Zov</button>
+            <button class="gold" id="adminGiveAllCase">🎁 Все кейсы</button>
+            <button class="green" id="adminSkipMiner">⏭️ Пропустить таймер шахтёра</button>
+            <button class="green" id="adminSkipDaily">📅 Пропустить все ежедневные</button>
+            <button class="gold" id="adminBoost10xForever">⚡ 10x (навсегда)</button>
+            <button class="gold" id="adminBoost100xForever">⚡ 100x (навсегда)</button>
+            <button class="gold" id="adminBoost10000x5min">⚡ 10000x (5 мин)</button>
+            <button class="admin" id="adminClearChat">🗑️ Очистить чат</button>
+        </div>
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ffd700;">🎁 Раздача всем игрокам</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                <button class="admin" id="giveAllTaps10k">💰 10,000 тапов</button>
+                <button class="admin" id="giveAllTaps100k">💰 100,000 тапов</button>
+                <button class="admin" id="giveAllTokens1k">🪙 1,000 токенов</button>
+                <button class="admin" id="giveAllTokens10k">🪙 10,000 токенов</button>
+                <button class="admin" id="giveAllGems100">💎 100 алмазов</button>
+            </div>
+        </div>
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ffd700;">🎉 Ивенты (5 минут)</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                <button class="admin" id="eventDisco">🪩 Disco! (5x клик)</button>
+                <button class="admin" id="eventVolcano">🌋 Вулкан (8x клик)</button>
+                <button class="admin" id="eventLightning">⚡ Молния (3x клик)</button>
+                <button class="admin" id="eventStop">⏹️ Остановить ивент</button>
+            </div>
+        </div>
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ff6666;">🛠️ Виджет ADMIN ABUSE (постоянный)</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                <button class="admin" id="widgetAbuseOn">📢 Показать виджет</button>
+                <button class="admin" id="widgetAbuseOff">🔇 Убрать виджет</button>
+            </div>
+        </div>
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ffd700;">📊 Информация об игроке</h4>
+            <input type="text" id="infoInput" class="owner-ban-input" placeholder="Ник игрока">
+            <button id="infoStatsBtn" class="owner-ban-btn info">📊 Статистика</button>
+            <button id="infoCurrencyBtn" class="owner-ban-btn info">💰 Валюта</button>
+            <div id="infoResult" style="color:#b8a0dd;font-size:12px;margin-top:4px;"></div>
+        </div>
+    </div>
+</div>
+        <!-- ОТПРАВКА СООБЩЕНИЙ (ADMIN) -->
+        <div style="margin-top:10px;padding:10px;border-top:1px solid #3a2a5a;">
+            <h4 style="color:#ffd700;">📢 Отправка сообщений</h4>
+            <input type="text" id="adminGlobalMsg" class="owner-ban-input" placeholder="Глобальное сообщение (всем)">
+            <button id="adminSendGlobalBtn" class="owner-ban-btn give" style="background:#4a2a6a;">🌍 Отправить всем</button>
+            <input type="text" id="adminLocalMsg" class="owner-ban-input" placeholder="Локальное сообщение (только вам)" style="margin-top:4px;">
+            <button id="adminSendLocalBtn" class="owner-ban-btn info">📨 Отправить себе</button>
+        </div>
+    </div>
+</div>
+  <div class="tab-content" id="tab-promo">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🎁 Промокоды</h3>
+    <div style="color:#7a5a9a;font-size:12px;margin-bottom:6px;">Введите промокод и получите награду!</div>
+    <input type="text" id="promoInput" placeholder="Введите промокод" style="width:100%;padding:12px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:14px;color:#fff;font-size:16px;outline:none;margin:8px 0;">
+    <button id="promoBtn" style="width:100%;padding:12px;border:none;border-radius:14px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;font-size:16px;cursor:pointer;">🎁 Активировать</button>
+    <div id="promoMessage" style="margin-top:10px;color:#b8a0dd;font-size:14px;"></div>
+</div>
+
+<div class="tab-content" id="tab-cases">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🎰 Кейсы</h3>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Открой кейс и получи случайный предмет!</div>
+    <div style="background:#1a0a2a;border-radius:24px;padding:20px 16px;border:2px solid #4a2a6a;margin:8px 0;">
+        <div style="font-size:48px;text-align:center;margin-bottom:8px;">📦</div>
+        <div style="color:#d4b8ff;font-size:14px;font-weight:bold;">Стандартный кейс</div>
+        <div style="color:#7a5a9a;font-size:12px;">350 💎</div>
+        <button id="caseBuyBtn" style="width:100%;padding:12px;border:none;border-radius:16px;background:linear-gradient(135deg,#6a4a1a,#8a6a2a);color:#ffd700;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px;">Buy 350 gems</button>
+        <div id="caseInventoryWarning" style="display:none;color:#ff6666;font-size:13px;margin-top:8px;font-weight:bold;">⚠️ Не хватает места в инвентаре! Освободите место, чтобы открыть кейс.</div>
+    </div>
+    <div style="background:#1a0a2a;border-radius:16px;padding:12px;border:1px solid #3a2a5a;margin-top:10px;text-align:left;">
+        <div style="color:#d4b8ff;font-size:12px;font-weight:bold;margin-bottom:6px;">📊 Шансы выпадения и цены на рынке:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:#b8a0dd;">
+            <div>🥓 Pig — <span style="color:#ffd700;">50%</span> — 💰 1000 / 🪙 1</div>
+            <div>🍷 Vine — <span style="color:#ffd700;">45%</span> — 💰 5000 / 🪙 5</div>
+            <div>🏢 Company — <span style="color:#ffd700;">20%</span> — 💰 30000 / 🪙 20</div>
+            <div>😝 We1qs — <span style="color:#ffd700;">10%</span> — 💰 50000 / 🪙 30</div>
+            <div>🥀 Urvxh — <span style="color:#ffd700;">5%</span> — 💰 70000 / 🪙 55</div>
+            <div>💼 werxhfrag — <span style="color:#ffd700;">0.5%</span> — 💰 10000000 / 💎 10000</div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content" id="tab-settings">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🛠️ Настройки</h3>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Настройте игру под себя</div>
+    <div style="background:#1a0a2a;border-radius:16px;padding:12px;border:1px solid #3a2a5a;margin:8px 0;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2a1a4a;">
+            <span style="color:#d4b8ff;font-size:14px;">🔇 Звуки при нажатии</span>
+            <button id="settingsSoundToggle" class="settings-toggle" style="padding:4px 12px;border-radius:20px;border:2px solid #4a2a6a;background:#2a1a4a;color:#d4b8ff;font-weight:bold;font-size:12px;cursor:pointer;">✅ Вкл</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2a1a4a;">
+            <span style="color:#d4b8ff;font-size:14px;">🎨 Тема</span>
+            <button id="settingsThemeToggle" class="settings-toggle" style="padding:4px 12px;border-radius:20px;border:2px solid #4a2a6a;background:#2a1a4a;color:#d4b8ff;font-weight:bold;font-size:12px;cursor:pointer;">🌙 Фиолетовая</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+            <span style="color:#d4b8ff;font-size:14px;">🎡 Анимация кейсов</span>
+            <button id="settingsCaseAnimationToggle" class="settings-toggle" style="padding:4px 12px;border-radius:20px;border:2px solid #4a2a6a;background:#2a1a4a;color:#d4b8ff;font-weight:bold;font-size:12px;cursor:pointer;">✅ Вкл</button>
+        </div>
+    </div>
+</div>
+<div class="tab-content" id="tab-work">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">🏢 Работа хомяков</h3>
+    <div style="color:#7a5a9a;font-size:11px;margin-bottom:6px;">Найми хомяков и получай клики!</div>
+    <div id="workGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;">
+        <div class="work-slot" data-index="0">➕</div>
+        <div class="work-slot" data-index="1">➕</div>
+        <div class="work-slot" data-index="2">➕</div>
+        <div class="work-slot" data-index="3">➕</div>
+        <div class="work-slot" data-index="4">➕</div>
+        <div class="work-slot" data-index="5">➕</div>
+        <div class="work-slot" data-index="6">➕</div>
+        <div class="work-slot" data-index="7">➕</div>
+        <div class="work-slot" data-index="8">➕</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;">
+        <button id="buyHamsterBtn" style="padding:10px;border:none;border-radius:14px;background:linear-gradient(135deg,#4a2a6a,#6a4a8a);color:#d4b8ff;font-weight:bold;font-size:14px;cursor:pointer;">🐹 Купить хомяка (100,000 💰)</button>
+        <button id="boostHamsterBtn" style="padding:10px;border:none;border-radius:14px;background:linear-gradient(135deg,#6a4a1a,#8a6a2a);color:#ffd700;font-weight:bold;font-size:14px;cursor:pointer;">⚡ Буст хомяков (20 💎)</button>
+    </div>
+    <div id="workStatus" style="color:#7a5a9a;font-size:12px;text-align:center;margin:4px 0;">Хомяков на работе: 0 / 9</div>
+</div>
+
+<div class="tab-content" id="tab-chat">
+    <h3 style="color:#b8a0dd;font-size:14px;margin:6px 0;">💬 Глобальный чат</h3>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Введите сообщение...">
+        <button id="chatSendBtn">📤 Отправить</button>
+    </div>
+    <div style="margin-top:6px;display:flex;gap:6px;">
+        <input type="text" id="privateChatInput" placeholder="Ник получателя" style="flex:1;padding:6px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:8px;color:#fff;font-size:12px;">
+        <input type="text" id="privateMsgInput" placeholder="Сообщение" style="flex:2;padding:6px;background:#0a0a1a;border:1px solid #4a2a6a;border-radius:8px;color:#fff;font-size:12px;">
+        <button id="privateSendBtn" style="padding:6px 12px;background:#4a2a6a;color:#d4b8ff;border:none;border-radius:8px;cursor:pointer;">📨</button>
+    </div>
+</div>
+<div class="stats-bottom" id="statsBottom">
+    <div>📊 Всего кликов: <span id="statTotalClicks">0</span></div>
+    <div>🔄 Перерождений: <span id="statRebirths">0</span></div>
+    <div>🪙 Токенов: <span id="statTokens">0</span></div>
+    <div>💰 Тапов: <span id="statCoins">0</span></div>
+    <div>💎 Алмазов: <span id="statGems">0</span></div>
+    <div>🎒 Предметов: <span id="statItems">0</span></div>
+    <div>⏱️ Время в игре: <span id="statTime">0ч 0м 0с</span></div>
+    <div>⛏️ Макс. выигрыш в шахтёре: <span id="statMinerBest">0</span></div>
+    <div>📦 Продано предметов: <span id="statSoldItems">0</span></div>
+    <div id="boostDisplay" style="color:#ffd700;">⚡ Бонус: нет</div>
+</div>
+<div class="bottom-row">
+    <button id="resetBtn" class="reset-btn">🔄 Сброс</button>
+</div>
+<div class="version">Версия 7.1 (UPDATE)</div>
+    </div>
+</div>
+
+<!-- Модалки -->
+<div class="modal" id="rebirthModal">
+    <div class="modal-content">
+        <h2>🔄 Перерождение</h2>
+        <p id="rebirthRewardText">Ты получишь: ...</p>
+        <button id="rebirthConfirm">✅ Переродиться</button>
+        <button class="close-btn" id="rebirthClose">❌ Закрыть</button>
+    </div>
+</div>
+
+<div class="modal" id="referralModal">
+    <div class="modal-content">
+        <h2>🔗 Реферальная ссылка</h2>
+        <p style="color:#b8a0dd;font-size:14px;margin:8px 0;">Твоя реферальная ссылка:</p>
+        <div style="background:#0a0a1a;padding:12px;border-radius:12px;color:#ffd700;font-size:16px;font-weight:bold;word-break:break-all;" id="refCodeDisplay">---</div>
+        <button id="copyRefBtn" style="width:100%;padding:12px;border:none;border-radius:14px;background:#4a2a6a;color:#d4b8ff;font-weight:bold;font-size:16px;cursor:pointer;margin:6px 0;">📋 Скопировать ссылку</button>
+        <button class="close-btn" id="refModalClose">❌ Закрыть</button>
+    </div>
+</div>
+
+<div class="modal" id="caseConfirmModal">
+    <div class="modal-content">
+        <h2>⚠️ Подтверждение</h2>
+        <p style="color:#b8a0dd;font-size:16px;">Вы точно хотите осуществить покупку?</p>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+            <button id="caseConfirmYes" style="flex:1;padding:12px;border:none;border-radius:14px;background:#228833;color:#fff;font-weight:bold;font-size:16px;cursor:pointer;">✅ Да</button>
+            <button id="caseConfirmNo" style="flex:1;padding:12px;border:none;border-radius:14px;background:#883322;color:#fff;font-weight:bold;font-size:16px;cursor:pointer;">❌ Нет</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="caseResultModal">
+    <div class="modal-content" id="caseResultContent">
+        <h2 id="caseResultTitle">⏳ Вам выпало...</h2>
+        <div class="case-spin-3d" id="caseSpinContainer">
+            <span class="case-emoji" id="caseResultEmoji">🎰</span>
+        </div>
+        <div id="caseResultName" style="color:#ffd700;font-size:20px;font-weight:bold;">---</div>
+        <button id="caseResultClose" class="close-btn" style="margin-top:10px;">❌ Закрыть</button>
+    </div>
+</div>
+
+<!-- Информационные модалки -->
+<div class="info-modal" id="infoModal">
+    <div class="info-modal-content">
+        <h2 id="infoModalTitle">📊 Информация</h2>
+        <div id="infoModalBody" style="font-size:14px;line-height:1.8;"></div>
+        <button id="infoModalClose">❌ Закрыть</button>
+    </div>
+</div>
+<script>
+const SERVER_URL = 'https://homyakv3.onrender.com';
+
+// ============================================================
+//  ЗВУКИ
+// ============================================================
+const SoundFX = {
+    ctx: null,
+    init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+    play(type) {
+        if (!settings || !settings.soundEnabled) return;
+        this.init();
+        const ctx = this.ctx;
+        const now = ctx.currentTime;
+        if (type === 'click') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        } else if (type === 'button') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.06);
+            gain.gain.setValueAtTime(0.04, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            osc.start(now);
+            osc.stop(now + 0.06);
+        } else if (type === 'win') {
+            [523, 659, 784].forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                gain.gain.setValueAtTime(0.06, now + i * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.1);
+                osc.start(now + i * 0.08);
+                osc.stop(now + i * 0.08 + 0.1);
+            });
+        } else if (type === 'rare') {
+            [440, 554, 659, 880].forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + i * 0.12);
+                gain.gain.setValueAtTime(0.08, now + i * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.15);
+                osc.start(now + i * 0.12);
+                osc.stop(now + i * 0.12 + 0.15);
+            });
+        }
+    }
+};
+
+function playHorrorSound() {
+    if (!settings || !settings.soundEnabled) return;
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+        const osc1 = ctx.createOscillator();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(55, now);
+        osc1.frequency.exponentialRampToValueAtTime(45, now + 8);
+        const osc2 = ctx.createOscillator();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(70, now);
+        osc2.frequency.exponentialRampToValueAtTime(60, now + 8);
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 180;
+        filter.Q.value = 1.5;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 12);
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 12.5);
+        osc2.stop(now + 12.5);
+    } catch (e) {}
+}
+
+// ============================================================
+//  СОСТОЯНИЕ
+// ============================================================
+let state = {
+    taps: 0, tokens: 0, gems: 0, totalClicks: 0,
+    rebirthCount: 0, clickPower: 1, inventory: [], dailyClaimed: [],
+    creatorUnlocked: false, creatorUnlockedForever: false,
+    activeBoosts: {}, lastDailyClaim: 0,
+    currentUser: null, firstLogin: null,
+    autoClickers: 0, clickUpgrade: 0,
+    autoClickerPrice: 25, clickUpgradePrice: 10,
+    playTime: 0, minerBest: 0, soldItems: 0,
+    refCode: null, usedRefCode: null, referredBy: null,
+    _ownerUnlockNotified: false,
+    banned: false, banReason: '',
+    adminUnlocked: false
+};
+
+let workState = {
+    slots: Array(9).fill(null),
+    hamsterIdCounter: 0,
+    boostActive: false,
+    boostEnd: 0
+};
+
+let settings = {
+    soundEnabled: true,
+    darkTheme: false,
+    caseAnimations: true
+};
+
+let globalEvent = null;
+let adminWidgetActive = false;
+
+// ============================================================
+//  DOM-ССЫЛКИ
+// ============================================================
+const authPanel = document.getElementById('authPanel');
+const gamePanel = document.getElementById('gamePanel');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const showRegister = document.getElementById('showRegister');
+const showLogin = document.getElementById('showLogin');
+const loginBtn = document.getElementById('loginBtn');
+const registerBtn = document.getElementById('registerBtn');
+const loginUsername = document.getElementById('loginUsername');
+const loginPassword = document.getElementById('loginPassword');
+const regUsername = document.getElementById('regUsername');
+const regPassword = document.getElementById('regPassword');
+const refCodeInput = document.getElementById('refCodeInput');
+const logoutBtn = document.getElementById('logoutBtn');
+const userNameDisplay = document.getElementById('userNameDisplay');
+
+const tapDisplay = document.getElementById('tapDisplay');
+const tokenDisplay = document.getElementById('tokenDisplay');
+const gemDisplay = document.getElementById('gemDisplay');
+const totalClicksDisplay = document.getElementById('totalClicks');
+const clickPowerDisplay = document.getElementById('clickPower');
+const rebirthCountDisplay = document.getElementById('rebirthCount');
+const rebirthBtn = document.getElementById('rebirthBtn');
+const rebirthFill = document.getElementById('rebirthFill');
+const rebirthProgressText = document.getElementById('rebirthProgressText');
+const hamsterArea = document.getElementById('hamsterArea');
+const inventoryGrid = document.getElementById('inventoryGrid');
+const marketGrid = document.getElementById('marketGrid');
+const dailyGrid = document.getElementById('dailyGrid');
+const shopGrid = document.getElementById('shopGrid');
+const invCount = document.getElementById('invCount');
+const minerTabBtn = document.getElementById('minerTabBtn');
+const minerUnlockText = document.getElementById('minerUnlockText');
+const ownerPanel = document.getElementById('ownerPanel');
+const adminPanel = document.getElementById('adminPanel');
+const promoInput = document.getElementById('promoInput');
+const promoBtn = document.getElementById('promoBtn');
+const promoMessage = document.getElementById('promoMessage');
+
+const statTotalClicks = document.getElementById('statTotalClicks');
+const statRebirths = document.getElementById('statRebirths');
+const statTokens = document.getElementById('statTokens');
+const statCoins = document.getElementById('statCoins');
+const statGems = document.getElementById('statGems');
+const statItems = document.getElementById('statItems');
+const statTime = document.getElementById('statTime');
+const statMinerBest = document.getElementById('statMinerBest');
+const statSoldItems = document.getElementById('statSoldItems');
+const boostDisplay = document.getElementById('boostDisplay');
+
+const rebirthModal = document.getElementById('rebirthModal');
+const rebirthRewardText = document.getElementById('rebirthRewardText');
+const rebirthConfirm = document.getElementById('rebirthConfirm');
+const rebirthClose = document.getElementById('rebirthClose');
+
+const refModal = document.getElementById('referralModal');
+const refCodeDisplay = document.getElementById('refCodeDisplay');
+const copyRefBtn = document.getElementById('copyRefBtn');
+const refModalClose = document.getElementById('refModalClose');
+
+const caseBuyBtn = document.getElementById('caseBuyBtn');
+const caseConfirmModal = document.getElementById('caseConfirmModal');
+const caseConfirmYes = document.getElementById('caseConfirmYes');
+const caseConfirmNo = document.getElementById('caseConfirmNo');
+const caseResultModal = document.getElementById('caseResultModal');
+const caseResultTitle = document.getElementById('caseResultTitle');
+const caseResultEmoji = document.getElementById('caseResultEmoji');
+const caseResultName = document.getElementById('caseResultName');
+const caseResultClose = document.getElementById('caseResultClose');
+const caseInventoryWarning = document.getElementById('caseInventoryWarning');
+
+const buyHamsterBtn = document.getElementById('buyHamsterBtn');
+const boostHamsterBtn = document.getElementById('boostHamsterBtn');
+const workStatus = document.getElementById('workStatus');
+
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
+const privateChatInput = document.getElementById('privateChatInput');
+const privateMsgInput = document.getElementById('privateMsgInput');
+const privateSendBtn = document.getElementById('privateSendBtn');
+
+const ownerPassword = document.getElementById('ownerPassword');
+const ownerLoginBtn = document.getElementById('ownerLoginBtn');
+const adminPassword = document.getElementById('adminPassword');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const banInput = document.getElementById('banInput');
+const banBtn = document.getElementById('banBtn');
+const unbanBtn = document.getElementById('unbanBtn');
+const kickBtn = document.getElementById('kickBtn');
+const banDuration = document.getElementById('banDuration');
+const banReasonInput = document.getElementById('banReasonInput');
+const banTempBtn = document.getElementById('banTempBtn');
+const giveInput = document.getElementById('giveInput');
+const banStatus = document.getElementById('banStatus');
+const infoInput = document.getElementById('infoInput');
+const infoStatsBtn = document.getElementById('infoStatsBtn');
+const infoCurrencyBtn = document.getElementById('infoCurrencyBtn');
+const infoResult = document.getElementById('infoResult');
+const infoModal = document.getElementById('infoModal');
+const infoModalTitle = document.getElementById('infoModalTitle');
+const infoModalBody = document.getElementById('infoModalBody');
+const infoModalClose = document.getElementById('infoModalClose');
+
+const ownerGlobalMsg = document.getElementById('ownerGlobalMsg');
+const ownerSendGlobalBtn = document.getElementById('ownerSendGlobalBtn');
+const ownerLocalMsg = document.getElementById('ownerLocalMsg');
+const ownerSendLocalBtn = document.getElementById('ownerSendLocalBtn');
+const adminGlobalMsg = document.getElementById('adminGlobalMsg');
+const adminSendGlobalBtn = document.getElementById('adminSendGlobalBtn');
+const adminLocalMsg = document.getElementById('adminLocalMsg');
+const adminSendLocalBtn = document.getElementById('adminSendLocalBtn');
+
+const resetBtn = document.getElementById('resetBtn');
+
+let isClickCooldown = false;
+let usedPromos = JSON.parse(localStorage.getItem('usedPromos')) || [];
+let playTimeInterval = null;
+let chatInterval = null;
+  function startPlayTimeCounter() {
+    if (playTimeInterval) return;
+    playTimeInterval = setInterval(() => {
+        if (state.currentUser) {
+            state.playTime += 1;
+            updateStatTime();
+            saveToServer();
+        }
+    }, 1000);
+}
+
+function updateStatTime() {
+    const hours = Math.floor(state.playTime / 3600);
+    const minutes = Math.floor((state.playTime % 3600) / 60);
+    const seconds = state.playTime % 60;
+    statTime.textContent = hours + 'ч ' + minutes + 'м ' + seconds + 'с';
+}
+
+function updateBoostDisplay() {
+    const now = Date.now();
+    let boosts = [];
+    for (const key in state.activeBoosts) {
+        if (state.activeBoosts[key] > now) {
+            const val = key.replace('boost', '');
+            const timeLeft = Math.ceil((state.activeBoosts[key] - now) / 1000);
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            boosts.push(val + 'x (' + minutes + 'м ' + seconds + 'с)');
+        }
+    }
+    if (boosts.length > 0) {
+        boostDisplay.textContent = '⚡ Бонус: ' + boosts.join(', ');
+    } else {
+        boostDisplay.textContent = '⚡ Бонус: нет';
+    }
+}
+
+function checkOwnerUnlock() {
+    if (state.creatorUnlockedForever) {
+        state.creatorUnlocked = true;
+        ownerPanel.style.display = 'block';
+        return;
+    }
+    const now = Date.now();
+    const firstLogin = state.firstLogin || now;
+    const daysPassed = Math.floor((now - firstLogin) / 86400000);
+    if (daysPassed >= 7) {
+        state.creatorUnlockedForever = true;
+        state.creatorUnlocked = true;
+        ownerPanel.style.display = 'block';
+        if (!state._ownerUnlockNotified) {
+            showToast('👑 Панель создателя разблокирована НАВСЕГДА!');
+            state._ownerUnlockNotified = true;
+            saveToServer();
+        }
+    }
+}
+
+function getClickPower() {
+    let power = 1 + state.rebirthCount + state.clickUpgrade;
+    const now = Date.now();
+    let boostMult = 1;
+    for (const key in state.activeBoosts) {
+        if (state.activeBoosts[key] > now) {
+            const val = parseInt(key.replace('boost', ''));
+            if (!isNaN(val)) boostMult = Math.max(boostMult, val);
+        }
+    }
+    if (globalEvent && globalEvent.endTime > now) {
+        if (globalEvent.type === 'disco') boostMult = Math.max(boostMult, 5);
+        else if (globalEvent.type === 'volcano') boostMult = Math.max(boostMult, 8);
+        else if (globalEvent.type === 'lightning') boostMult = Math.max(boostMult, 3);
+    }
+    return Math.floor(power * boostMult);
+}
+
+function showToast(text) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+function showToastLocalMessage(sender, text) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = `<strong>${sender} <span class="verified-badge">✓</span></strong>: ${text}`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+}
+
+async function saveToServer() {
+    if (!state.currentUser) return;
+    try {
+        await fetch(SERVER_URL + '/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: state.currentUser,
+                data: {
+                    taps: state.taps,
+                    tokens: state.tokens,
+                    gems: state.gems,
+                    totalClicks: state.totalClicks,
+                    rebirthCount: state.rebirthCount,
+                    clickPower: state.clickPower,
+                    inventory: state.inventory,
+                    dailyClaimed: state.dailyClaimed,
+                    autoClickers: state.autoClickers,
+                    clickUpgrade: state.clickUpgrade,
+                    autoClickerPrice: state.autoClickerPrice,
+                    clickUpgradePrice: state.clickUpgradePrice,
+                    playTime: state.playTime,
+                    minerBest: state.minerBest,
+                    soldItems: state.soldItems,
+                    firstLogin: state.firstLogin,
+                    lastDailyClaim: state.lastDailyClaim,
+                    activeBoosts: state.activeBoosts,
+                    creatorUnlocked: state.creatorUnlocked,
+                    creatorUnlockedForever: state.creatorUnlockedForever,
+                    _ownerUnlockNotified: state._ownerUnlockNotified,
+                    workSlots: workState.slots,
+                    hamsterIdCounter: workState.hamsterIdCounter,
+                    adminUnlocked: state.adminUnlocked || false
+                }
+            })
+        });
+    } catch (e) {}
+}
+
+// ============================================================
+//  АВТОРИЗАЦИЯ
+// ============================================================
+showRegister.onclick = () => { loginForm.style.display = 'none'; registerForm.style.display = 'block'; };
+showLogin.onclick = () => { registerForm.style.display = 'none'; loginForm.style.display = 'block'; };
+
+loginBtn.onclick = async () => {
+    const u = loginUsername.value.trim();
+    const p = loginPassword.value.trim();
+    if (!u || !p) return alert('Заполните все поля');
+    try {
+        const res = await fetch(SERVER_URL + '/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert('❌ ' + data.error);
+            return;
+        }
+        const user = data.user;
+        state.currentUser = u;
+        state.taps = user.taps || 0;
+        state.tokens = user.tokens || 0;
+        state.gems = user.gems || 0;
+        state.totalClicks = user.totalClicks || 0;
+        state.rebirthCount = user.rebirthCount || 0;
+        state.clickPower = user.clickPower || 1;
+        state.inventory = user.inventory || [];
+        state.dailyClaimed = user.dailyClaimed || [];
+        state.autoClickers = user.autoClickers || 0;
+        state.clickUpgrade = user.clickUpgrade || 0;
+        state.autoClickerPrice = user.autoClickerPrice || 25;
+        state.clickUpgradePrice = user.clickUpgradePrice || 10;
+        state.playTime = user.playTime || 0;
+        state.minerBest = user.minerBest || 0;
+        state.soldItems = user.soldItems || 0;
+        state.firstLogin = user.firstLogin || Date.now();
+        state.lastDailyClaim = user.lastDailyClaim || 0;
+        state.activeBoosts = user.activeBoosts || {};
+        state.creatorUnlocked = user.creatorUnlocked || false;
+        state.creatorUnlockedForever = user.creatorUnlockedForever || false;
+        state._ownerUnlockNotified = user._ownerUnlockNotified || false;
+        state.refCode = user.refCode || null;
+        state.referredBy = user.referredBy || null;
+        state.banned = user.banned || false;
+        state.banReason = user.banReason || '';
+        state.adminUnlocked = user.adminUnlocked || false;
+        workState.slots = user.workSlots || Array(9).fill(null);
+        workState.hamsterIdCounter = user.hamsterIdCounter || 0;
+
+        authPanel.style.display = 'none';
+        gamePanel.style.display = 'block';
+        userNameDisplay.textContent = '👤 ' + u;
+        updateUI();
+        renderWorkGrid();
+        loadChat();
+        startPlayTimeCounter();
+        checkEventStatus();
+        checkWidgetStatus();
+        if (state.adminUnlocked) adminPanel.style.display = 'block';
+        showToast('✅ Добро пожаловать, ' + u + '!');
+    } catch (err) {
+        alert('⚠️ Ошибка соединения с сервером!');
+    }
+};
+
+registerBtn.onclick = async () => {
+    const u = regUsername.value.trim();
+    const p = regPassword.value.trim();
+    if (!u || !p) return alert('Заполните все поля');
+    const refCode = refCodeInput.value.trim().toUpperCase();
+    try {
+        const res = await fetch(SERVER_URL + '/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: u, password: p, refCode })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert('❌ ' + data.error);
+            return;
+        }
+        alert('✅ ' + data.message + ' Теперь войдите.');
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        regUsername.value = '';
+        regPassword.value = '';
+        refCodeInput.value = '';
+    } catch (err) {
+        alert('⚠️ Ошибка соединения с сервером!');
+    }
+};
+
+logoutBtn.onclick = () => {
+    if (confirm('Выйти из аккаунта?')) {
+        saveToServer();
+        state.currentUser = null;
+        authPanel.style.display = 'block';
+        gamePanel.style.display = 'none';
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        document.querySelector('.tab-btn[data-tab="main"]').click();
+    }
+};
+
+const lastUser = localStorage.getItem('homyak_last_user');
+if (lastUser && users[lastUser]) {
+    state.currentUser = lastUser;
+    loadState(lastUser);
+    authPanel.style.display = 'none';
+    gamePanel.style.display = 'block';
+    userNameDisplay.textContent = '👤 ' + lastUser;
+    loadWorkState();
+    updateUI();
+    renderWorkGrid();
+    loadChat();
+    startPlayTimeCounter();
+    checkEventStatus();
+    checkWidgetStatus();
+    if (state.adminUnlocked) adminPanel.style.display = 'block';
+    showToast('✅ Добро пожаловать, ' + lastUser + '!');
+} else {
+    authPanel.style.display = 'block';
+    gamePanel.style.display = 'none';
+}
+
+function rememberUser() {
+    if (state.currentUser) localStorage.setItem('homyak_last_user', state.currentUser);
+}
+setInterval(rememberUser, 1000);
+
+document.getElementById('changePasswordBtn').onclick = function() {
+    const oldPass = prompt('Введите текущий пароль:');
+    if (!oldPass) return;
+    const newPass = prompt('Введите новый пароль (3-10 символов):');
+    if (!newPass || newPass.length < 3 || newPass.length > 10) {
+        showToast('❌ Пароль должен быть от 3 до 10 символов');
+        return;
+    }
+    fetch(SERVER_URL + '/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: state.currentUser, oldPass, newPass })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) showToast('✅ Пароль изменён!');
+        else showToast('❌ ' + data.error);
+    })
+    .catch(() => showToast('❌ Ошибка сервера'));
+};
+
+function updateUI() {
+    tapDisplay.textContent = Number(state.taps).toLocaleString() || '0';
+    tokenDisplay.textContent = Number(state.tokens).toLocaleString() || '0';
+    gemDisplay.textContent = Number(state.gems).toLocaleString() || '0';
+    totalClicksDisplay.textContent = Number(state.totalClicks) || 0;
+    clickPowerDisplay.textContent = getClickPower() || 1;
+    rebirthCountDisplay.textContent = Number(state.rebirthCount) || 0;
+    invCount.textContent = Number(state.inventory.length) || 0;
+
+    const clicksForRebirth = 1000;
+    const progress = Math.min((Number(state.totalClicks) || 0) / clicksForRebirth, 1) * 100;
+    rebirthFill.style.width = progress + '%';
+    rebirthProgressText.textContent = Math.min(Number(state.totalClicks) || 0, clicksForRebirth) + ' / ' + clicksForRebirth + ' кликов';
+
+    statTotalClicks.textContent = Number(state.totalClicks) || 0;
+    statRebirths.textContent = Number(state.rebirthCount) || 0;
+    statTokens.textContent = Number(state.tokens) || 0;
+    statCoins.textContent = Number(state.taps) || 0;
+    statGems.textContent = Number(state.gems) || 0;
+    statItems.textContent = Number(state.inventory.length) || 0;
+    statMinerBest.textContent = Number(state.minerBest) || 0;
+    statSoldItems.textContent = Number(state.soldItems) || 0;
+    updateStatTime();
+    updateBoostDisplay();
+
+    rebirthBtn.disabled = (Number(state.totalClicks) || 0) < clicksForRebirth || state.rebirthCount >= 20;
+
+    if (state.rebirthCount >= 2) {
+        minerTabBtn.style.display = 'inline-block';
+        minerUnlockText.style.display = 'block';
+    } else {
+        minerTabBtn.style.display = 'none';
+        minerUnlockText.style.display = 'none';
+    }
+
+    checkOwnerUnlock();
+    renderInventory();
+    renderMarket();
+    renderDaily();
+    renderShop();
+    updateDailyTimer();
+    updateMinerUI();
+    saveToServer();
+    applyEventStyles();
+    applyWidget();
+  }
+  function spawnFloatingText(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'click-effect';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    hamsterArea.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+}
+
+function handleClick(event) {
+    if (isClickCooldown) return;
+    isClickCooldown = true;
+    setTimeout(() => { isClickCooldown = false; }, 500);
+
+    SoundFX.play('click');
+    const power = getClickPower();
+    state.taps += power;
+    state.totalClicks += 1;
+
+    if (Math.random() < 0.02) {
+        state.gems += 1;
+        showToast('💎 +1 алмаз!');
+    }
+
+    const rand = Math.random() * 100;
+    const rareItems = [
+        { id: 'dragon_eye', emoji: '🐉', name: 'Глаз дракона', sellTap: 0, sellToken: 250, sellGems: 20, chance: 0.1, rare: true },
+        { id: 'amethyst', emoji: '🟣', name: 'Аметист', sellTap: 5000, sellToken: 20, sellGems: 0, chance: 0.3, rare: false },
+        { id: 'diamond_item', emoji: '💎', name: 'Алмаз (предмет)', sellTap: 0, sellToken: 20, sellGems: 5, chance: 0.2, rare: false },
+        { id: 'golden_glasses', emoji: '🕶️', name: 'Золотые очки', sellTap: 10000, sellToken: 50, sellGems: 0, chance: 0.2, rare: false }
+    ];
+
+    for (const item of rareItems) {
+        if (rand < item.chance && state.inventory.length < 20) {
+            state.inventory.push({
+                id: item.id,
+                emoji: item.emoji,
+                name: item.name,
+                sellTap: item.sellTap,
+                sellToken: item.sellToken,
+                sellGems: item.sellGems
+            });
+            if (item.rare) {
+                SoundFX.play('rare');
+                const overlay = document.createElement('div');
+                overlay.className = 'celebration-overlay';
+                overlay.innerHTML = `
+                    <div class="celebration-text">🎉 Поздравляю, тебе выпал ценный артефакт — ${item.name}!</div>
+                    <div class="celebration-close" id="celebrationClose">✕</div>
+                `;
+                document.body.appendChild(overlay);
+                document.getElementById('celebrationClose').onclick = () => overlay.remove();
+                setTimeout(() => overlay.remove(), 5000);
+            } else {
+                showToast('🎁 Выпал предмет: ' + item.name);
+            }
+            updateUI();
+            break;
+        }
+    }
+
+    const rect = hamsterArea.getBoundingClientRect();
+    const x = (event.clientX || event.touches?.[0]?.clientX || rect.left + rect.width/2) - rect.left;
+    const y = (event.clientY || event.touches?.[0]?.clientY || rect.top + rect.height/2) - rect.top;
+    spawnFloatingText(x, y, '+' + power);
+    updateUI();
+}
+
+hamsterArea.addEventListener('click', handleClick);
+hamsterArea.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    handleClick(e);
+});
+
+setInterval(() => {
+    if (state.autoClickers > 0 && state.currentUser) {
+        const power = getClickPower();
+        state.taps += power * state.autoClickers;
+        state.totalClicks += state.autoClickers;
+        updateUI();
+    }
+}, 1000);
+
+setInterval(() => {
+    if (state.currentUser) {
+        state.tokens += 2;
+        updateUI();
+        showToast('🪙 +2 токена (автоматически)');
+    }
+}, 180000);
+
+const MAX_REBIRTHS = 20;
+
+rebirthBtn.onclick = function() {
+    if (state.rebirthCount >= MAX_REBIRTHS) {
+        showToast('🏆 Ты достиг максимума перерождений!');
+        return;
+    }
+    if (state.totalClicks < 1000) {
+        showToast('❌ Нужно 1000 кликов для перерождения!');
+        return;
+    }
+    SoundFX.play('button');
+    const nextLevel = state.rebirthCount + 1;
+    rebirthRewardText.textContent = 'Перерождение ' + (nextLevel) + ': ' + (nextLevel === MAX_REBIRTHS ? '🎉 ПОБЕДА!' : 'Нет награды');
+    rebirthModal.classList.add('active');
+};
+
+rebirthConfirm.onclick = function() {
+    if (state.rebirthCount >= MAX_REBIRTHS) {
+        rebirthModal.classList.remove('active');
+        return;
+    }
+    state.rebirthCount += 1;
+    state.totalClicks = 0;
+    state.taps = 0;
+    state.autoClickers = 0;
+    state.clickUpgrade = 0;
+    state.autoClickerPrice = 25;
+    state.clickUpgradePrice = 10;
+    state.clickPower = 1;
+    rebirthModal.classList.remove('active');
+    SoundFX.play('win');
+    showToast('🔄 Перерождение ' + state.rebirthCount + '!');
+    updateUI();
+};
+
+rebirthClose.onclick = function() {
+    rebirthModal.classList.remove('active');
+};
+
+function renderInventory() {
+    inventoryGrid.innerHTML = '';
+    state.inventory.forEach((item, index) => {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot filled';
+        slot.innerHTML = `<span>${item.emoji}</span><span class="qty">1</span>`;
+        slot.title = `${item.name}`;
+        inventoryGrid.appendChild(slot);
+    });
+    for (let i = state.inventory.length; i < 20; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot';
+        slot.textContent = '⬜';
+        inventoryGrid.appendChild(slot);
+    }
+}
+
+function renderMarket() {
+    marketGrid.innerHTML = '';
+    const marketItems = state.inventory.map(item => ({
+        ...item,
+        sellTap: item.sellTap || 0,
+        sellToken: item.sellToken || 0,
+        sellGems: item.sellGems || 0
+    }));
+    if (marketItems.length === 0) {
+        marketGrid.innerHTML = '<div style="color:#7a5a9a;grid-column:span 2;">Нет предметов для продажи</div>';
+        return;
+    }
+    marketItems.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'market-item';
+        div.innerHTML = `
+            <div class="emoji">${item.emoji}</div>
+            <div class="name">${item.name}</div>
+            <div class="price">💰 ${item.sellTap} | 🪙 ${item.sellToken} | 💎 ${item.sellGems}</div>
+            <div class="market-sell">
+                ${item.sellTap > 0 ? `<button class="tap-btn" data-index="${index}">💰</button>` : ''}
+                ${item.sellToken > 0 ? `<button class="token-btn" data-index="${index}">🪙</button>` : ''}
+                ${item.sellGems > 0 ? `<button class="gem-btn" data-index="${index}">💎</button>` : ''}
+            </div>
+        `;
+        marketGrid.appendChild(div);
+    });
+    document.querySelectorAll('.market-sell .tap-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            e.stopPropagation();
+            const idx = parseInt(this.dataset.index);
+            const item = state.inventory[idx];
+            if (!item) return;
+            state.taps += item.sellTap;
+            state.inventory.splice(idx, 1);
+            state.soldItems += 1;
+            SoundFX.play('win');
+            showToast('💰 +' + item.sellTap + ' тапов!');
+            updateUI();
+        };
+    });
+    document.querySelectorAll('.market-sell .token-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            e.stopPropagation();
+            const idx = parseInt(this.dataset.index);
+            const item = state.inventory[idx];
+            if (!item) return;
+            state.tokens += item.sellToken;
+            state.inventory.splice(idx, 1);
+            state.soldItems += 1;
+            SoundFX.play('win');
+            showToast('🪙 +' + item.sellToken + ' токенов!');
+            updateUI();
+        };
+    });
+    document.querySelectorAll('.market-sell .gem-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            e.stopPropagation();
+            const idx = parseInt(this.dataset.index);
+            const item = state.inventory[idx];
+            if (!item) return;
+            state.gems += item.sellGems;
+            state.inventory.splice(idx, 1);
+            state.soldItems += 1;
+            SoundFX.play('win');
+            showToast('💎 +' + item.sellGems + ' алмазов!');
+            updateUI();
+        };
+    });
+  }
+  const DAILY_REWARDS = [
+    { day: 1, emoji: '💰', name: '5000 тапов', value: '5000 тапов', type: 'taps', amount: 5000 },
+    { day: 2, emoji: '💰', name: '50000 тапов', value: '50000 тапов', type: 'taps', amount: 50000 },
+    { day: 3, emoji: '🪙', name: '200 токенов', value: '200 токенов', type: 'tokens', amount: 200 },
+    { day: 4, emoji: '🪙', name: '300 токенов', value: '300 токенов', type: 'tokens', amount: 300 },
+    { day: 5, emoji: '🥇', name: 'Золото', value: 'Золото (предмет)', type: 'item', item: { id: 'gold', emoji: '🥇', name: 'Золото', sellTap: 900000, sellToken: 350, sellGems: 0 } },
+    { day: 6, emoji: '🦿', name: 'Железная нога + рука', value: '🦿🦾', type: 'items', items: [{ id: 'iron_leg', emoji: '🦿', name: 'Железная нога', sellTap: 700000, sellToken: 150, sellGems: 0 }, { id: 'iron_arm', emoji: '🦾', name: 'Железная рука', sellTap: 500000, sellToken: 100, sellGems: 0 }] },
+    { day: 7, emoji: '🪙', name: '1000 токенов!', value: '1000 токенов! 🎉', type: 'tokens', amount: 1000 }
+];
+
+function renderDaily() {
+    dailyGrid.innerHTML = '';
+    const now = Date.now();
+    const firstLogin = state.firstLogin || now;
+    if (!state.firstLogin) state.firstLogin = firstLogin;
+    const daysPassed = Math.floor((now - firstLogin) / 86400000);
+    const todayIndex = daysPassed % 7;
+    DAILY_REWARDS.forEach((reward, index) => {
+        const div = document.createElement('div');
+        div.className = 'daily-item';
+        const isClaimed = state.dailyClaimed.includes(index);
+        const isToday = index === todayIndex && !isClaimed;
+        if (isClaimed) {
+            div.classList.add('claimed');
+            div.innerHTML = `<div class="emoji">✅</div><div class="day">День ${index+1}</div><div style="color:#6f6;font-size:10px;">Получено</div>`;
+        } else if (isToday) {
+            div.classList.add('today');
+            div.innerHTML = `<div class="emoji">${reward.emoji}</div><div class="day">День ${index+1}</div><div class="reward">${reward.value}</div><div style="color:#ffd700;font-size:10px;">👆 Нажми</div>`;
+            div.onclick = () => claimDaily(index);
+        } else {
+            div.innerHTML = `<div class="unknown">?</div><div class="day">День ${index+1}</div><div style="color:#4a2a6a;font-size:11px;">???</div>`;
+        }
+        dailyGrid.appendChild(div);
+    });
+}
+
+function claimDaily(index) {
+    const now = Date.now();
+    const firstLogin = state.firstLogin || now;
+    const daysPassed = Math.floor((now - firstLogin) / 86400000);
+    const todayIndex = daysPassed % 7;
+    if (index !== todayIndex) {
+        showToast('❌ Это не сегодняшняя награда!');
+        return;
+    }
+    if (state.dailyClaimed.includes(index)) {
+        showToast('❌ Уже получено!');
+        return;
+    }
+    const reward = DAILY_REWARDS[index];
+    switch (reward.type) {
+        case 'taps':
+            state.taps += reward.amount;
+            showToast('💰 +' + reward.amount + ' тапов!');
+            break;
+        case 'tokens':
+            state.tokens += reward.amount;
+            showToast('🪙 +' + reward.amount + ' токенов!');
+            break;
+        case 'item':
+            if (state.inventory.length < 20) {
+                state.inventory.push(reward.item);
+                showToast('🎁 Получен предмет: ' + reward.item.name);
+            } else {
+                showToast('❌ Инвентарь полон!');
+            }
+            break;
+        case 'items':
+            let added = 0;
+            reward.items.forEach(item => {
+                if (state.inventory.length < 20) {
+                    state.inventory.push(item);
+                    added++;
+                }
+            });
+            showToast('🎁 Получено ' + added + ' предметов!');
+            break;
+    }
+    state.dailyClaimed.push(index);
+    state.lastDailyClaim = now;
+    SoundFX.play('win');
+    updateUI();
+}
+
+function updateDailyTimer() {
+    const now = Date.now();
+    const firstLogin = state.firstLogin || now;
+    const daysPassed = Math.floor((now - firstLogin) / 86400000);
+    const nextClaimTime = firstLogin + (daysPassed + 1) * 86400000;
+    const diff = nextClaimTime - now;
+    const el = document.getElementById('dailyCountdown');
+    if (diff <= 0) {
+        el.textContent = '✅ Доступно!';
+    } else {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+}
+setInterval(updateDailyTimer, 1000);
+
+function renderShop() {
+    shopGrid.innerHTML = '';
+    const autoDiv = document.createElement('div');
+    autoDiv.className = 'shop-item';
+    autoDiv.innerHTML = `
+        <div class="emoji">🤖</div>
+        <div class="name">Автокликер (x${state.autoClickers})</div>
+        <div class="price price-taps">💰 ${state.autoClickerPrice}</div>
+    `;
+    autoDiv.onclick = () => buyAutoClicker();
+    shopGrid.appendChild(autoDiv);
+    const clickDiv = document.createElement('div');
+    clickDiv.className = 'shop-item';
+    clickDiv.innerHTML = `
+        <div class="emoji">💪</div>
+        <div class="name">+1 клик (${state.clickUpgrade})</div>
+        <div class="price price-taps">💰 ${state.clickUpgradePrice}</div>
+    `;
+    clickDiv.onclick = () => buyClickUpgrade();
+    shopGrid.appendChild(clickDiv);
+    const SHOP_ITEMS = [
+        { id: 'skip_rebirth', emoji: '⏭️', name: 'Пропустить перерождение', price: 200, priceType: 'tokens' },
+        { id: 'boost2_5min', emoji: '⚡', name: '2x клик (5 мин)', price: 1000, priceType: 'taps' },
+        { id: 'boost5_5min', emoji: '⚡⚡', name: '5x клик (5 мин)', price: 10000, priceType: 'taps' },
+        { id: 'buy_amethyst', emoji: '🟣', name: 'Аметист', price: 30, priceType: 'gems' },
+        { id: 'buy_golden_glasses', emoji: '🕶️', name: 'Золотые очки', price: 60, priceType: 'gems' },
+        { id: 'buy_dragon_eye', emoji: '🐉', name: 'Глаз дракона', price: 120, priceType: 'gems' },
+        { id: 'buy_diamond_item', emoji: '💎', name: 'Алмаз (предмет)', price: 20, priceType: 'gems' },
+        { id: 'ref_link', emoji: '🔗', name: 'Реферальная ссылка', price: 0, priceType: 'none' }
+    ];
+    SHOP_ITEMS.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'shop-item';
+        if (item.id === 'ref_link') {
+            div.innerHTML = `
+                <div class="emoji">${item.emoji}</div>
+                <div class="name">${item.name}</div>
+                <div style="color:#ffd700;font-size:11px;">👆 Нажми</div>
+            `;
+            div.onclick = () => openReferralModal();
+        } else {
+            const priceSymbol = item.priceType === 'tokens' ? '🪙' : item.priceType === 'gems' ? '💎' : '💰';
+            div.innerHTML = `
+                <div class="emoji">${item.emoji}</div>
+                <div class="name">${item.name}</div>
+                <div class="price">${priceSymbol} ${item.price}</div>
+            `;
+            div.onclick = () => buyShopItem(item);
+        }
+        shopGrid.appendChild(div);
+    });
+}
+
+function openReferralModal() {
+    const link = window.location.origin + window.location.pathname + '?ref=' + state.refCode;
+    refCodeDisplay.textContent = link;
+    refModal.classList.add('active');
+}
+
+copyRefBtn.onclick = function() {
+    const link = window.location.origin + window.location.pathname + '?ref=' + state.refCode;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+            showToast('📋 Ссылка скопирована!');
+        }).catch(() => {
+            const input = document.createElement('input');
+            input.value = link;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            input.remove();
+            showToast('📋 Ссылка скопирована!');
+        });
+    } else {
+        const input = document.createElement('input');
+        input.value = link;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+        showToast('📋 Ссылка скопирована!');
+    }
+};
+
+refModalClose.onclick = function() {
+    refModal.classList.remove('active');
+};
+
+function buyAutoClicker() {
+    if (state.taps < state.autoClickerPrice) {
+        showToast('❌ Недостаточно тапов!');
+        return;
+    }
+    state.taps -= state.autoClickerPrice;
+    state.autoClickers += 1;
+    state.autoClickerPrice = Math.floor(state.autoClickerPrice * 1.6) + 5;
+    showToast('🤖 Автокликер куплен! +1 клик/сек');
+    updateUI();
+}
+
+function buyClickUpgrade() {
+    if (state.taps < state.clickUpgradePrice) {
+        showToast('❌ Недостаточно тапов!');
+        return;
+    }
+    state.taps -= state.clickUpgradePrice;
+    state.clickUpgrade += 1;
+    state.clickUpgradePrice = Math.floor(state.clickUpgradePrice * 1.5) + 5;
+    showToast('💪 +1 к силе клика!');
+    updateUI();
+}
+
+function buyShopItem(item) {
+    if (item.id === 'ref_link') {
+        openReferralModal();
+        return;
+    }
+    SoundFX.play('button');
+    const price = item.price;
+    let hasEnough = false;
+    let currencyName = '';
+    if (item.priceType === 'tokens') {
+        hasEnough = state.tokens >= price;
+        currencyName = 'токенов';
+    } else if (item.priceType === 'gems') {
+        hasEnough = state.gems >= price;
+        currencyName = 'алмазов';
+    } else {
+        hasEnough = state.taps >= price;
+        currencyName = 'тапов';
+    }
+    if (!hasEnough) {
+        showToast('❌ Недостаточно ' + currencyName + '!');
+        return;
+    }
+    if (item.priceType === 'tokens') {
+        state.tokens -= price;
+    } else if (item.priceType === 'gems') {
+        state.gems -= price;
+    } else {
+        state.taps -= price;
+    }
+    switch (item.id) {
+        case 'skip_rebirth':
+            state.totalClicks += 1000;
+            showToast('⏭️ Перерождение пропущено!');
+            break;
+        case 'boost2_5min':
+            state.activeBoosts['boost2'] = Date.now() + 5 * 60000;
+            showToast('⚡ 2x клик на 5 минут!');
+            break;
+        case 'boost5_5min':
+            state.activeBoosts['boost5'] = Date.now() + 5 * 60000;
+            showToast('⚡ 5x клик на 5 минут!');
+            break;
+        case 'buy_amethyst':
+            if (state.inventory.length < 20) {
+                state.inventory.push({ id: 'amethyst', emoji: '🟣', name: 'Аметист', sellTap: 5000, sellToken: 20, sellGems: 0 });
+                showToast('🟣 Куплен аметист!');
+            } else {
+                showToast('❌ Инвентарь полон!');
+            }
+            break;
+        case 'buy_golden_glasses':
+            if (state.inventory.length < 20) {
+                state.inventory.push({ id: 'golden_glasses', emoji: '🕶️', name: 'Золотые очки', sellTap: 10000, sellToken: 50, sellGems: 0 });
+                showToast('🕶️ Куплены золотые очки!');
+            } else {
+                showToast('❌ Инвентарь полон!');
+            }
+            break;
+        case 'buy_dragon_eye':
+            if (state.inventory.length < 20) {
+                state.inventory.push({ id: 'dragon_eye', emoji: '🐉', name: 'Глаз дракона', sellTap: 0, sellToken: 250, sellGems: 20 });
+                showToast('🐉 Куплен глаз дракона!');
+            } else {
+                showToast('❌ Инвентарь полон!');
+            }
+            break;
+        case 'buy_diamond_item':
+            if (state.inventory.length < 20) {
+                state.inventory.push({ id: 'diamond_item', emoji: '💎', name: 'Алмаз (предмет)', sellTap: 0, sellToken: 20, sellGems: 5 });
+                showToast('💎 Куплен алмаз (предмет)!');
+            } else {
+                showToast('❌ Инвентарь полон!');
+            }
+            break;
+    }
+    updateUI();
+  }
+  ownerLoginBtn.onclick = function() {
+    const pass = ownerPassword.value;
+    if (pass === '0561' || state.creatorUnlockedForever) {
+        ownerPanel.style.display = 'block';
+        state.creatorUnlocked = true;
+        showToast('🔓 Панель создателя разблокирована!');
+        SoundFX.play('win');
+        updateUI();
+    } else {
+        alert('❌ Неверный код!');
+    }
+};
+
+function creatorBoost(boost, duration) {
+    return () => {
+        if (!state.creatorUnlocked) return;
+        const expiry = duration === -1 ? Infinity : Date.now() + duration * 60000;
+        state.activeBoosts['boost' + boost] = expiry;
+        showToast('⚡ ' + boost + 'x клик ' + (duration === -1 ? 'НАВСЕГДА!' : 'на ' + duration + ' мин!'));
+        updateUI();
+    };
+}
+
+document.getElementById('creatorBoost10sec').onclick = creatorBoost(10, 10/60);
+document.getElementById('creatorBoost10hour').onclick = creatorBoost(10, 60);
+document.getElementById('creatorBoost10forever').onclick = creatorBoost(10, -1);
+document.getElementById('creatorBoost50sec').onclick = creatorBoost(50, 10/60);
+document.getElementById('creatorBoost50hour').onclick = creatorBoost(50, 60);
+document.getElementById('creatorBoost50forever').onclick = creatorBoost(50, -1);
+
+document.getElementById('creatorInfiniteTokens').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    state.tokens = 999999999;
+    showToast('🪙 Бесконечные токены!');
+    updateUI();
+};
+document.getElementById('creatorInfiniteTaps').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    state.taps = 999999999;
+    showToast('💰 Бесконечные тапы!');
+    updateUI();
+};
+document.getElementById('creatorInfiniteGems').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    state.gems = 999999999;
+    showToast('💎 Бесконечные алмазы!');
+    updateUI();
+};
+document.getElementById('creatorAdd50').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    state.gems += 50;
+    showToast('💎 +50 алмазов');
+    updateUI();
+};
+document.getElementById('creatorAdd100').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    state.gems += 100;
+    showToast('💎 +100 алмазов');
+    updateUI();
+};
+document.getElementById('creatorAdd500').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    state.gems += 500;
+    showToast('💎 +500 алмазов');
+    updateUI();
+};
+document.getElementById('creatorSkipMinerCooldown').onclick = function() {
+    if (!state.creatorUnlocked) return;
+    minerState.cooldownUntil = 0;
+    saveMinerState();
+    updateMinerUI();
+    showToast('⏭️ Таймер шахтёра сброшен!');
+};
+
+document.getElementById('creatorUnlockDaily').onclick = function() {
+    if (!state.creatorUnlocked) {
+        showToast('❌ Панель создателя не разблокирована!');
+        return;
+    }
+    const now = Date.now();
+    const firstLogin = state.firstLogin || now;
+    if (!state.firstLogin) state.firstLogin = firstLogin;
+    let claimedCount = 0;
+    for (let i = 0; i < DAILY_REWARDS.length; i++) {
+        if (!state.dailyClaimed.includes(i)) {
+            const reward = DAILY_REWARDS[i];
+            switch (reward.type) {
+                case 'taps':
+                    state.taps += reward.amount;
+                    break;
+                case 'tokens':
+                    state.tokens += reward.amount;
+                    break;
+                case 'item':
+                    if (state.inventory.length < 20) state.inventory.push(reward.item);
+                    break;
+                case 'items':
+                    reward.items.forEach(item => {
+                        if (state.inventory.length < 20) state.inventory.push(item);
+                    });
+                    break;
+            }
+            state.dailyClaimed.push(i);
+            claimedCount++;
+        }
+    }
+    if (claimedCount === 0) {
+        showToast('❌ Все ежедневные награды уже получены!');
+    } else {
+        showToast('🎁 Получено ' + claimedCount + ' ежедневных наград!');
+        SoundFX.play('win');
+        updateUI();
+    }
+};
+
+document.getElementById('creatorGiveAll').onclick = function() {
+    if (!state.creatorUnlocked) {
+        showToast('❌ Панель создателя не разблокирована!');
+        return;
+    }
+    const allItems = [
+        { id: 'iron_arm', emoji: '🦾', name: 'Железная рука', sellTap: 500000, sellToken: 100, sellGems: 0 },
+        { id: 'iron_leg', emoji: '🦿', name: 'Железная нога', sellTap: 700000, sellToken: 150, sellGems: 0 },
+        { id: 'gold', emoji: '🥇', name: 'Золото', sellTap: 900000, sellToken: 350, sellGems: 0 },
+        { id: 'secret', emoji: '🔮', name: 'Секретный материал', sellTap: 999999999, sellToken: 1000, sellGems: 0 },
+        { id: 'amethyst', emoji: '🟣', name: 'Аметист', sellTap: 5000, sellToken: 20, sellGems: 0 },
+        { id: 'dragon_eye', emoji: '🐉', name: 'Глаз дракона', sellTap: 0, sellToken: 250, sellGems: 20 },
+        { id: 'golden_glasses', emoji: '🕶️', name: 'Золотые очки', sellTap: 10000, sellToken: 50, sellGems: 0 },
+        { id: 'diamond_item', emoji: '💎', name: 'Алмаз (предмет)', sellTap: 0, sellToken: 20, sellGems: 5 },
+        { id: 'zov', emoji: '🇷🇺', name: 'Zov', sellTap: 999999999, sellToken: 999999999, sellGems: 999999999 },
+        { id: 'case_pig', emoji: '🥓', name: 'Pig', sellTap: 1000, sellToken: 1, sellGems: 0 },
+        { id: 'case_vine', emoji: '🍷', name: 'Vine', sellTap: 5000, sellToken: 5, sellGems: 0 },
+        { id: 'case_company', emoji: '🏢', name: 'Company', sellTap: 30000, sellToken: 20, sellGems: 0 },
+        { id: 'case_we1qs', emoji: '😝', name: 'We1qs', sellTap: 50000, sellToken: 30, sellGems: 0 },
+        { id: 'case_urvxh', emoji: '🥀', name: 'Urvxh', sellTap: 70000, sellToken: 55, sellGems: 0 },
+        { id: 'case_werxhfrag', emoji: '💼', name: 'werxhfrag', sellTap: 10000000, sellToken: 0, sellGems: 10000 }
+    ];
+    let added = 0;
+    allItems.forEach(item => {
+        const exists = state.inventory.some(i => i.id === item.id);
+        if (!exists && state.inventory.length < 20) {
+            state.inventory.push({ ...item });
+            added++;
+        }
+    });
+    if (added === 0) {
+        showToast('❌ Все предметы уже есть в инвентаре!');
+    } else {
+        showToast('🎁 Добавлено ' + added + ' предметов!');
+        SoundFX.play('win');
+    }
+    updateUI();
+};
+
+// БАН, КИК
+banBtn.onclick = async function() {
+    const name = banInput.value.trim();
+    if (!name) return showToast('❌ Введите ник');
+    if (!state.creatorUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/ban-nick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name, reason: 'Нарушение правил' })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('🚫 Игрок ' + name + ' забанен!');
+            banInput.value = '';
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+unbanBtn.onclick = async function() {
+    const name = banInput.value.trim();
+    if (!name) return showToast('❌ Введите ник');
+    if (!state.creatorUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/unban-nick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('✅ Игрок ' + name + ' разбанен!');
+            banInput.value = '';
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+kickBtn.onclick = async function() {
+    const name = banInput.value.trim();
+    if (!name) return showToast('❌ Введите ник');
+    if (!state.creatorUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/kick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('👢 Игрок ' + name + ' кикнут!');
+            banInput.value = '';
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+banTempBtn.onclick = async function() {
+    const name = banInput.value.trim();
+    const duration = parseInt(banDuration.value);
+    const reason = banReasonInput.value.trim() || 'Нарушение правил';
+    if (!name || !duration) return showToast('❌ Введите ник и время бана');
+    if (!state.creatorUnlocked) return showToast('❌ Панель не разблокирована');
+    try {
+        const res = await fetch(SERVER_URL + '/ban-temp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name, reason: reason, duration: duration })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('⏳ Игрок ' + name + ' забанен на ' + duration + ' секунд');
+            banInput.value = '';
+            banDuration.value = '';
+            banReasonInput.value = '';
+        } else {
+            showToast('❌ ' + data.error);
+        }
+    } catch (e) {
+        showToast('❌ Ошибка сервера');
+    }
+};
+
+document.querySelectorAll('.owner-ban-btn.give').forEach(btn => {
+    btn.onclick = async function() {
+        const name = giveInput.value.trim();
+        if (!name) return showToast('❌ Введите ник');
+        if (!state.creatorUnlocked) return showToast('❌ Панель не разблокирована');
+        const item = JSON.parse(this.dataset.item);
+        try {
+            const res = await fetch(SERVER_URL + '/give-item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: name, item: item })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('🎁 Предмет ' + item.name + ' выдан игроку ' + name);
+                giveInput.value = '';
+            } else {
+                showToast('❌ ' + data.error);
+            }
+        } catch (e) {
+            showToast('❌ Ошибка сервера');
+        }
+    };
+});
+  
