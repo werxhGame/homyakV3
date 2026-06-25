@@ -7,12 +7,23 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Раздаём HTML-файлы из папки "public"
+app.use(express.static('public'));
+
+// Если кто-то зайдёт на корень сайта — покажем index.html
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
 const MONGO_URI = 'mongodb+srv://Admin:homyakV3_212400@cluster0.owsi01j.mongodb.net/homyak?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ Подключено к MongoDB'))
   .catch(err => console.error('❌ Ошибка MongoDB:', err.message));
 
+// ============================================================
+// СХЕМЫ
+// ============================================================
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
@@ -56,7 +67,9 @@ const chatSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Chat = mongoose.model('Chat', chatSchema);
 
-// РЕГИСТРАЦИЯ
+// ============================================================
+// РОУТЫ (сокращённо, без изменений)
+// ============================================================
 app.post('/register', async (req, res) => {
     try {
         const { username, password, refCode } = req.body;
@@ -84,7 +97,6 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// ВХОД
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -141,7 +153,10 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// СОХРАНЕНИЕ
+
+// ============================================================
+// ОСТАЛЬНЫЕ РОУТЫ (сохрани их все, я их не трогаю)
+// ============================================================
 app.post('/save', async (req, res) => {
     try {
         const { username, data } = req.body;
@@ -160,7 +175,6 @@ app.post('/save', async (req, res) => {
     }
 });
 
-// СБРОС
 app.post('/reset', async (req, res) => {
     try {
         const { username } = req.body;
@@ -191,7 +205,6 @@ app.post('/reset', async (req, res) => {
     }
 });
 
-// БАН
 app.post('/ban-nick', async (req, res) => {
     try {
         const { username, reason } = req.body;
@@ -237,7 +250,6 @@ app.post('/unban-nick', async (req, res) => {
     }
 });
 
-// KICK
 app.post('/kick', async (req, res) => {
     try {
         const { username } = req.body;
@@ -249,7 +261,6 @@ app.post('/kick', async (req, res) => {
     }
 });
 
-// ВЫДАЧА ПРЕДМЕТА
 app.post('/give-item', async (req, res) => {
     try {
         const { username, item } = req.body;
@@ -278,7 +289,6 @@ app.post('/give-item', async (req, res) => {
     }
 });
 
-// ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ИГРОКЕ
 app.post('/user-info', async (req, res) => {
     try {
         const { username } = req.body;
@@ -301,7 +311,6 @@ app.post('/user-info', async (req, res) => {
     }
 });
 
-// СПИСОК ИГРОКОВ
 app.get('/users', async (req, res) => {
     try {
         const users = await User.find({}, 'username refCode gems tokens taps rebirthCount banned');
@@ -311,7 +320,6 @@ app.get('/users', async (req, res) => {
     }
 });
 
-// РАЗДАЧА ВСЕМ ИГРОКАМ
 app.post('/give-all', async (req, res) => {
     try {
         const { type, amount, message } = req.body;
@@ -336,8 +344,144 @@ app.post('/give-all', async (req, res) => {
 });
 
 // ============================================================
-//  ИВЕНТЫ
+// ЧАТ
 // ============================================================
+const warnings = {};
+const userMessages = {};
+const userLastMessage = {};
+
+function isSpam(text) {
+    const words = text.split(' ');
+    if (words.length < 8) return false;
+    const firstWord = words[0].toLowerCase();
+    return words.every(w => w.toLowerCase() === firstWord);
+}
+
+function isFlood(username) {
+    const now = Date.now();
+    if (!userMessages[username]) userMessages[username] = [];
+    userMessages[username] = userMessages[username].filter(t => now - t < 10000);
+    userMessages[username].push(now);
+    return userMessages[username].length >= 5;
+}
+
+function isDuplicate(username, message) {
+    if (!userLastMessage[username]) {
+        userLastMessage[username] = '';
+        return false;
+    }
+    const isDup = userLastMessage[username] === message;
+    userLastMessage[username] = message;
+    return isDup;
+}
+
+app.post('/chat', async (req, res) => {
+    try {
+        const { username, message } = req.body;
+        if (!username || !message) return res.status(400).json({ error: 'Заполните все поля' });
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+        if (user.banned) return res.status(403).json({ error: '⛔ Вы забанены!' });
+
+        if (isSpam(message) || isFlood(username) || isDuplicate(username, message)) {
+            warnings[username] = (warnings[username] || 0) + 1;
+            if (warnings[username] >= 2) {
+                user.banned = true;
+                user.banReason = '2/2 предупреждений. Бан на 10 часов, подумайте над своими спамами';
+                user.banUntil = new Date(Date.now() + 10 * 3600000);
+                await user.save();
+                const banMsg = new Chat({ username: 'ANTI-SPAM_bot', message: `🚫 ${username} — 2/2 предупреждений. Бан на 10 часов!` });
+                await banMsg.save();
+                warnings[username] = 0;
+                return res.status(403).json({ error: 'Вы забанены за спам' });
+            } else {
+                const kickMsg = new Chat({ username: 'ANTI-SPAM_bot', message: `⚠️ ${username} — 1/2 предупреждений!` });
+                await kickMsg.save();
+                return res.status(403).json({ error: '1/2 предупреждений' });
+            }
+        }
+
+        const chat = new Chat({ username, message });
+        await chat.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/chat/private', async (req, res) => {
+    try {
+        const { from, to, message } = req.body;
+        if (!from || !to || !message) return res.status(400).json({ error: 'Заполните все поля' });
+        const user = await User.findOne({ username: to });
+        if (!user) return res.status(404).json({ error: 'Игрок не найден' });
+        const chat = new Chat({ 
+            username: from, 
+            message: '[💬 ЛС → ' + to + ']: ' + message,
+            isPrivate: true 
+        });
+        await chat.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/chat', async (req, res) => {
+    try {
+        const messages = await Chat.find().sort({ timestamp: -1 }).limit(50);
+        res.json(messages.reverse());
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/chat/clear', async (req, res) => {
+    try {
+        await Chat.deleteMany({});
+        const systemMsg = new Chat({ username: 'System', message: '🗑️ Глобальный чат очищен!' });
+        await systemMsg.save();
+        const rules = [
+            '📜 ПРАВИЛА ЧАТА:',
+            '1.0 — Не материться/обзывать пользователей.',
+            '1.1 — Будьте уважительнее!',
+            '1.2 — Следите за словами.',
+            '1.3 — Читы → бан.',
+            '1.4 — Спам: 1-е предупреждение — кик, 2-е — бан 10ч.',
+            '1.5 — Пропаганда → бан 3 дня.',
+            '1.6 — Будьте вежливы!'
+        ];
+        const ruleMsg = new Chat({ username: 'PRAVILA_BOT', message: rules.join(' ') });
+        await ruleMsg.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+setInterval(async () => {
+    try {
+        await Chat.deleteMany({});
+        const systemMsg = new Chat({ username: 'System', message: '🔄 Глобальный чат автоматически очищен (24 часа)' });
+        await systemMsg.save();
+        const rules = [
+            '📜 ПРАВИЛА ЧАТА:',
+            '1.0 — Не материться/обзывать пользователей.',
+            '1.1 — Будьте уважительнее!',
+            '1.2 — Следите за словами.',
+            '1.3 — Читы → бан.',
+            '1.4 — Спам: 1-е предупреждение — кик, 2-е — бан 10ч.',
+            '1.5 — Пропаганда → бан 3 дня.',
+            '1.6 — Будьте вежливы!'
+        ];
+        const ruleMsg = new Chat({ username: 'PRAVILA_BOT', message: rules.join(' ') });
+        await ruleMsg.save();
+        console.log('🔄 Чат автоматически очищен (24 часа)');
+    } catch (err) {
+        console.error('❌ Ошибка автоочистки чата:', err.message);
+    }
+}, 24 * 3600000);
+
 let globalEvent = null;
 
 app.post('/event/start', async (req, res) => {
@@ -378,4 +522,38 @@ app.get('/event/status', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+let adminAbuseWidget = false;
+
+app.post('/widget/abuse', async (req, res) => {
+    try {
+        const { active } = req.body;
+        adminAbuseWidget = active;
+        if (active) {
+            const chatMsg = new Chat({ username: 'System', message: '🛠️ Сейчас проходит ADMIN ABUSE!' });
+            await chatMsg.save();
+        } else {
+            const chatMsg = new Chat({ username: 'System', message: '✅ ADMIN ABUSE завершён!' });
+            await chatMsg.save();
+        }
+        res.json({ success: true, active: adminAbuseWidget });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/widget/status', async (req, res) => {
+    try {
+        res.json({ active: adminAbuseWidget });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// ЗАПУСК (ИСПРАВЛЕНО)
+// ============================================================
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Сервер запущен на порту ${PORT}`);
 });
